@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Title</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <nav>
+        <a href="#home" class="logoWrapper">
+            <img src="./assets/logo.png">
+            <p>Cocktail DB</p>
+        </a>
+
+        <div class="search">
+            <input type="search" name="search" id="searchBtn" placeholder="Search drinks">
+            <a href="#search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </a>
+        </div>
+        
+        <a href="#user" class="userWrapper">
+            <p>Log In</p>
+            <i class="fa-sharp fa-solid fa-user"></i>
+        </a>
+    </nav>
+
+    <div class="modalBackground">
+        <div id="userModal">
+            <div class="modalInputs">
+                <input type="text" id="uNameCreate" placeholder="Username" />
+                <input type="email" id="emailCreate" placeholder="Email" />
+                <input type="password" id="pwCreate" placeholder="Password"/>
+                <input type="submit" value="Create Account" id="createAcctBtn" />
+            </div>
+            <div class="modalInputs">
+                <input type="email" id="email" placeholder="Email" />
+                <input type="password" id="pw" placeholder="Password" />
+                <input type="submit" value="Login" id="loginBtn" />
+            </div>
+        </div>
+    </div>
+    
+
+    <div id="app"></div>
+
+    <footer>
+        <p>&copy;Copyright Matthew Wolf 2023</p>
+    </footer>
+
+    <script src="lib/jquery-3.7.1.js"></script>
+    <script type="module" src="app/app.js"></script>
+</body>
+</html>

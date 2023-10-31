@@ -1,0 +1,169 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Georgia, "Times New Roman", Times, serif;
+}
+
+html, body {
+  height: 100%;
+  padding: 0 8%;
+}
+
+#app {
+  min-height: calc(100vh - 120px);
+  background-color: #ffffff;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 70px;
+  background-color: #ffffff;
+  padding: 0 15px;
+}
+nav a {
+  text-decoration: none;
+  color: #000;
+  font-size: 18px;
+}
+nav .logoWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+nav .logoWrapper img {
+  height: 35px;
+  width: 35px;
+  margin-right: 10px;
+}
+nav .logoWrapper p {
+  margin-top: 5px;
+}
+nav .search {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+nav .search input {
+  height: 35px;
+  width: 300px;
+  padding-left: 5px;
+  border: 1px solid #e6e1e1;
+  border-radius: 5px 0 0 5px;
+}
+nav .search a {
+  height: 35px;
+  width: 40px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  border: 1px solid #e6e1e1;
+  border-left: none;
+  border-radius: 0 5px 5px 0;
+}
+nav .search a i {
+  font-size: 15px;
+}
+nav .userWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+nav .userWrapper i {
+  border: 2px solid #000;
+  padding: 8px;
+  border-radius: 50%;
+}
+nav .userWrapper p {
+  margin-right: 10px;
+  font-size: 15px;
+}
+
+footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  background-color: #ffffff;
+  height: 50px;
+  font-size: 16px;
+}
+
+.home {
+  display: flex;
+  flex-wrap: wrap;
+}
+.home .drinkItem {
+  display: flex;
+  flex: 0 0 25%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  text-decoration: none;
+  margin-top: 15px;
+}
+.home .drinkItem:hover {
+  color: #ad9b9b;
+}
+.home .drinkItem p {
+  border: none;
+  color: #000;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+.home .drinkItem p:hover {
+  color: #ad9b9b;
+}
+.home .drinkItem img {
+  max-width: 225px;
+  border-radius: 0 15px 0 15px;
+}
+
+.letterPagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 20px 15% 20px 15%;
+}
+.letterPagination a {
+  text-decoration: none;
+}
+
+.modalBackground {
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 99;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+.modalBackground #userModal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  border: 1px solid #000;
+  background-color: #fff;
+  border-radius: 10px;
+}
+.modalBackground #userModal .modalInputs {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border-right: 1px solid #000;
+}
+.modalBackground #userModal .modalInputs input[type=text], .modalBackground #userModal .modalInputs input[type=email], .modalBackground #userModal .modalInputs input[type=password] {
+  margin-bottom: 10px;
+}
+.modalBackground #userModal .modalInputs:last-child {
+  border: none;
+}
+
+/*# sourceMappingURL=styles.css.map */

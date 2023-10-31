@@ -1,0 +1,7 @@
+node_modules
+package-lock.json
+dist/lib
+.vscode
+jsconfig.json
+package.json
+src/credentials.js
