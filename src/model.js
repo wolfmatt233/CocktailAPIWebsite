@@ -3,35 +3,24 @@
 // const apiKey = "3qejyl6/TzFQqVdiJQ6oDw==oJFyiwWlxulyGdcw";
 const baseURL = "https://www.thecocktaildb.com/api/json/v1/1/"
 const searchURL = "search.php?"
+const lookupURL = "lookup.php?"
 const byName = "s="
 const byId = "i="
 const byFirstLetter = "f="
 
-//---------OTHER---------\\
+//---------PAGE ROUTING---------\\
 
 export function currentPage(pageID) {
   if (pageID == "home" || pageID == "") {
-    // index("a");
+    index("a");
   }
 }
 
 
-//----------USER----------\\
-
-//Read User to page
-
-//Update User
-
-//Delete User
-
-//Add item to favorites
-
-//Add a review
-
 
 //----------API----------\\
 
-function index(letter) {
+export function index(letter) {
   $("#app").html(`<div class="home"></div>`)
   let byLetterURL = `${baseURL}${searchURL}${byFirstLetter}${letter}`
   let alphabet = [...'abcdefghijklmnopqrstuvwxyz']
@@ -56,6 +45,31 @@ function index(letter) {
   })
 }
 
+export function view(id) {
+  let byIdUrl = `${baseURL}${lookupURL}${byId}${id}`
+  //get specific item from api, display details
+  //include review, add to favorites, and add to custom list buttons if user is logged in
+  //include reviews section: avg star rating and worded reviews
+}
+
+export function search(searchQuery) {
+  //using nav search bar, search for items in the API based on title
+  $("#app").html(`<div class="list"></div>`)
+  let byNameUrl = `${baseURL}${searchURL}${byName}${searchQuery}`
+
+  $.getJSON(byNameUrl, (data) => {
+    data = data.drinks
+    
+    data.forEach((drink) => {
+      $(".list").append(`
+        <a href="#${drink.idDrink}" class="drinkItem">
+            <p>${drink.strDrink}</p>
+            <img src="${drink.strDrinkThumb}" alt="DrinkImg">
+        </a>
+      `)
+    });
+  })
+}
 
 
 // let alphabet = [...'zyxwvutsrqponmlkjihgfedcba']

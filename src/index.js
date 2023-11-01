@@ -22,69 +22,174 @@ import * as MODEL from "./model.js";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const globalUser = null;
+const db = getFirestore(app);
+var globalUser = null; //application wide variable to check user status
+
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
     // User is signed in
-    const uid = user.uid;
     globalUser = user;
-    console.log("Signed in.")
-    console.log("User ID: ", uid);
-    console.log(globalUser);
+    userModal(); //modal needs to know the user state before being called
+    console.log("Signed in.");
   } else {
     // User is signed out
+    userModal();
+    updateUserDisplay();
     console.log("You need to sign in.");
   }
 });
 
+
+
+//---------INIT---------\\
+
 function initListeners() {
   routes();
-  userModal();
 }
 
 $(document).ready(function () {
   initListeners();
 });
 
+
+
+//---------PAGE ROUTING---------\\
+
 function routes() {
   let hashLocation = window.location.hash;
   let pageID = hashLocation.replace("#", "");
 
-  MODEL.currentPage(pageID);
+  if (pageID == "home" || pageID == "") {
+    MODEL.index("a");
+  } else if(pageID == "user") {
+    viewUser();
+  }
 }
 
-//----------USER----------\\
+
+
+//----------USER CRUD----------\\
 
 function userModal() {
-  $("#user").on("click", () => {
-    if(!globalUser) {
-      //listen for create user button
+  updateUserDisplay();
+
+  //if there is a logged in user
+  if (globalUser === null) {
+    //Modal is allowed
+    $("#userWrapper").on("click", () => {
+      $("#modalBackground").css("display", "block")
+
       $("#createAcctBtn").on("click", () => {
-        let uName = $("#uNameCreate").val();
-        let email = $("#emailCreate").val();
-        let pw = $("#pwCreate").val();
-    
-        createUserWithEmailAndPassword(auth, email, pw)
-          .then((userCredentials) => {
-            //create document in firestore
-            console.log("Created ", userCredentials.user);
-          })
-          .catch((error) => {
-            console.log("Error: ", error.message);
-          });
-      })
+        createUser();
+      });
 
-      //listen for login user button
-      $("#login").on("click", () => {
+      $("#loginBtn").on("click", () => {
+        loginUser();
+      });
+    });
+  } else {
+    //listen for logout click
+    $("#logout").on("click", () => {
+      logoutUser(auth);
+    });
+  }
+}
 
-      })
-    }
-  })
+function createUser() {
+  $(".error").html("");
+  let uName = $("#uNameCreate").val();
+  let email = $("#emailCreate").val();
+  let pw = $("#pwCreate").val();
+
+  if (!uName || !email || !pw) {
+    return $(".error").html("Form must be complete.").css("color", "red");
+  }
+
+  createUserWithEmailAndPassword(auth, email, pw)
+    .then((userCredentials) => {
+      updateProfile(auth.currentUser, {
+        displayName: uName,
+      });
+
+      //create document in firestore
+      let newUser = {
+        email: email,
+        favorites: [],
+        reviews: [],
+        customLists: [],
+        userId: userCredentials.user.uid,
+        username: uName,
+      };
+
+      addUser(newUser);
+
+      console.log("Created ", userCredentials.user);
+
+      clearForms();
+      updateUserDisplay();
+    })
+    .catch((error) => {
+      console.log("Error creating user: ", error.message);
+    });
+}
+
+async function addUser(newUser) {
+  try {
+    const docRef = await addDoc(collection(db, "CocktailDB"), newUser);
+    console.log("Doc id: " + docRef.id);
+  } catch (e) {
+    console.log("Error adding to db: ", e);
+  }
+}
+
+function loginUser() {
+  let email = $("#email").val();
+  let password = $("#pw").val();
+
+  signInWithEmailAndPassword(auth, email, password)
+    .then((userCredentials) => {
+      clearForms();
+      updateUserDisplay();
+    })
+    .catch((e) => {
+      console.log("Error Logging in", e.message);
+    });
+}
+
+function logoutUser(auth) {
+  signOut(auth)
+    .then(() => {
+      globalUser = null //set current
+      updateUserDisplay();
+    })
+    .catch((e) => {
+      console.log("Error signing out: ", e.message);
+    });
+}
+
+function clearForms() {
+  $("#modalBackground").css("display", "none")
+  $("#userModal .modalInputs .paramInput").val("");
+}
+
+function updateUserDisplay() {
+  if(globalUser) {
+    //if signed in, display logout button and username
+    $("#logout").css("display", "block")
+    $("#userWrapper p").html(globalUser.displayName)
+  } else {
+    //if not signed in, display "sign in" and no log out button
+    $("#logout").css("display", "none")
+    $("#userWrapper p").html("Sign In")
+  }
 }
 
 function viewUser() {
   //get user information from storage to make graphs
+  if(!globalUser) {
+    $("#app").html("You need to log in or sign up first.")
+  } 
 }
 
 function updateUser() {
@@ -95,6 +200,10 @@ function deleteUser() {
   //remove document from firestore
 }
 
+
+
+//---------USER ACTIONS---------\\
+
 function addToFavorites() {
   //from details view, add a certain item to a user's favorites
 }
@@ -102,16 +211,4 @@ function addToFavorites() {
 function addReview() {
   //from details view, add a review by the user on a certain item
   //review added to separate storage. array of reviews, api item id included
-}
-
-//----------API----------\\START HERE
-
-function view() {
-  //get specific item from api, display details
-  //include review and add to favorites buttons if user is logged in
-  //include reviews section: avg star rating and worded reviews
-}
-
-function search() {
-  //using nav search bar, search for items in the API based on title
 }

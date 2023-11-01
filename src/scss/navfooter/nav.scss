@@ -1,10 +1,10 @@
 nav {
+    @include hoverAnim;
     display: flex;
     align-items: center;
     justify-content: space-between;
     height: 70px;
     background-color: $primaryColor;
-    padding: 0 15px;
 
     a {
         text-decoration: none;
@@ -12,7 +12,7 @@ nav {
         font-size: 18px;
     }
 
-    .logoWrapper {
+    #logoWrapper {
         display: flex;
         align-items: center;
         justify-content: space-evenly;
@@ -59,20 +59,43 @@ nav {
         }
     }
 
-    .userWrapper {
+    .loginOut {
         display: flex;
         align-items: center;
-        justify-content: space-evenly;
 
-        i {
-            border: 2px solid #000;
-            padding: 8px;
-            border-radius: 50%;
+        #userWrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-evenly;
+
+            &:hover {
+                // animation: hover;
+                // animation-duration: .2s;
+            }
+    
+            i {
+                border: 2px solid #000;
+                padding: 8px;
+                border-radius: 50%;
+
+                
+            }
+    
+            p {
+                margin-right: 10px;
+                font-size: 15px;
+            }
         }
 
-        p {
-            margin-right: 10px;
-            font-size: 15px;
+        #logout {
+            display: none;
+            cursor: pointer;
+            margin-left: 10px;
+
+            &:hover {
+                // animation: hover;
+                // animation-duration: .2s;
+            }
         }
     }
 }

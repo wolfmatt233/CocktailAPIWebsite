@@ -1,6 +1,7 @@
 @import "./base/variables.scss";
+@import "./base/mixins.scss";
 @import "./base/structure.scss";
-@import "./navfooter/nav.scss";
-@import "./navfooter/footer.scss";
-@import "./home/home.scss";
+@import "./navFooter/nav.scss";
+@import "./navFooter/footer.scss";
+@import "./apiList/apiList.scss";
 @import "./modal/modal.scss";
