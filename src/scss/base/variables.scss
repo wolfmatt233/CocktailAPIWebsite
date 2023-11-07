@@ -2,3 +2,6 @@ $primaryColor: #ffffff;
 $secondaryColor: #ffffff;
 $tertiaryColor: #ffffff;
 $pagePadSize: 8%;
+$navHeight: 80px;
+$footerHeight: 60px;
+$centerVertical: calc(100vh - ($navHeight + $footerHeight));

@@ -1,15 +1,15 @@
 * {
- margin: 0;
- padding: 0;
- box-sizing: border-box;
- font-family: Georgia, 'Times New Roman', Times, serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Georgia, "Times New Roman", Times, serif;
 }
-html, body {
- height: 100%;
- padding: 0 $pagePadSize;
+html,
+body {
+  height: 100%;
+  padding: 0 $pagePadSize;
 }
 #app {
-    min-height: calc( 100vh - 120px);
-    background-color: $secondaryColor;
-    // border: 1px solid #000;
+  min-height: $centerVertical;
+  background-color: $secondaryColor;
 }

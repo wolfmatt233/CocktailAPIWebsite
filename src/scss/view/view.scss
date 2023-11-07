@@ -1,0 +1,54 @@
+#view {
+  .siteBtn {
+    text-decoration: none;
+    color: #000;
+    font-size: 17px;
+    padding: 15px;
+    border-radius: 10px;
+    border-radius: 0 15px 0 15px;
+    border: 1px solid #000;
+    box-shadow: 3px 6px 6px #ad9b9b;
+  }
+
+  .siteBtn:hover {
+    background-color: #e8e3e3;
+  }
+
+  #viewItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    padding-top: 50px;
+
+    img {
+      max-width: 325px;
+      width: 30%;
+      border-radius: 0 15px 0 15px;
+      box-shadow: 3px 6px 6px #717070;
+    }
+
+    #viewData {
+      width: 50%;
+      padding: 15px;
+      border-radius: 5px;
+
+      h2 {
+        margin-bottom: 10px;
+        font-weight: 600;
+      }
+
+      .viewInfo {
+        margin-bottom: 25px;
+
+        p {
+          margin-bottom: 5px;
+        }
+
+        li {
+          margin-left: 25px;
+          margin-bottom: 5px;
+        }
+      }
+    }
+  }
+}

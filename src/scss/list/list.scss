@@ -1,0 +1,76 @@
+#list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  h1 {
+    display: inline;
+    text-align: center;
+    font-weight: 100;
+    padding: 5px;
+    // border-bottom: 2px solid #000;
+    // border-top: 2px solid #000;
+    border-radius: 5px;
+    margin: 10px 0;
+  }
+
+  #listData {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 50px;
+
+    .drinkItem {
+      display: flex;
+      flex: 0 0 25%;
+      align-items: center;
+      flex-direction: column;
+      justify-content: space-between;
+      text-decoration: none;
+      margin: 0 auto;
+      margin-top: 25px;
+
+      p:hover {
+        color: #ad9b9b;
+      }
+
+      p {
+        border: none;
+        color: #000;
+        margin-bottom: 10px;
+        font-size: 18px;
+
+        &:hover {
+          color: #ad9b9b;
+        }
+      }
+
+      img {
+        max-width: 225px;
+        border-radius: 0 15px 0 15px;
+        box-shadow: 3px 6px 6px #717070;
+      }
+    }
+  }
+
+  .letterPagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 5% 50px 5%;
+
+    a {
+      text-decoration: none;
+      color: hotpink;
+      font-size: 18px;
+    }
+
+    a:visited {
+      color: hotpink;
+    }
+
+    a:hover {
+      color: #000
+    }
+  }
+}

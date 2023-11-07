@@ -5,13 +5,14 @@
   font-family: Georgia, "Times New Roman", Times, serif;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   padding: 0 8%;
 }
 
 #app {
-  min-height: calc(100vh - 120px);
+  min-height: calc(100vh - 140px);
   background-color: #ffffff;
 }
 
@@ -19,7 +20,7 @@ nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 70px;
+  height: 80px;
   background-color: #ffffff;
 }
 @keyframes hover {
@@ -51,19 +52,19 @@ nav #logoWrapper img {
 nav #logoWrapper p {
   margin-top: 5px;
 }
-nav .search {
+nav .searchInput {
   display: flex;
   align-items: center;
   justify-content: space-evenly;
 }
-nav .search input {
+nav .searchInput input {
   height: 35px;
   width: 300px;
   padding-left: 5px;
   border: 1px solid #e6e1e1;
   border-radius: 5px 0 0 5px;
 }
-nav .search a {
+nav .searchInput a {
   height: 35px;
   width: 40px;
   text-decoration: none;
@@ -74,7 +75,7 @@ nav .search a {
   border-left: none;
   border-radius: 0 5px 5px 0;
 }
-nav .search a i {
+nav .searchInput a i {
   font-size: 15px;
 }
 nav .loginOut {
@@ -105,48 +106,8 @@ footer {
   align-items: center;
   justify-content: space-evenly;
   background-color: #ffffff;
-  height: 50px;
+  height: 60px;
   font-size: 16px;
-}
-
-.home {
-  display: flex;
-  flex-wrap: wrap;
-}
-.home .drinkItem {
-  display: flex;
-  flex: 0 0 25%;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  text-decoration: none;
-  margin-top: 15px;
-}
-.home .drinkItem:hover {
-  color: #ad9b9b;
-}
-.home .drinkItem p {
-  border: none;
-  color: #000;
-  margin-bottom: 10px;
-  font-size: 18px;
-}
-.home .drinkItem p:hover {
-  color: #ad9b9b;
-}
-.home .drinkItem img {
-  max-width: 225px;
-  border-radius: 0 15px 0 15px;
-}
-
-.letterPagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 20px 15% 20px 15%;
-}
-.letterPagination a {
-  text-decoration: none;
 }
 
 #modalBackground {
@@ -159,7 +120,7 @@ footer {
   bottom: 0;
   left: 0;
 }
-#modalBackground #userModal {
+#modalBackground #modal {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -171,20 +132,129 @@ footer {
   background-color: #fff;
   border-radius: 10px;
 }
-#modalBackground #userModal .modalInputs {
+#modalBackground #modal .modalInputs {
   width: 50%;
   display: flex;
   flex-direction: column;
   padding: 20px;
   border-right: 1px solid #000;
 }
-#modalBackground #userModal .modalInputs input[type=text],
-#modalBackground #userModal .modalInputs input[type=email],
-#modalBackground #userModal .modalInputs input[type=password] {
+#modalBackground #modal .modalInputs input[type=text],
+#modalBackground #modal .modalInputs input[type=email],
+#modalBackground #modal .modalInputs input[type=password] {
   margin-bottom: 10px;
 }
-#modalBackground #userModal .modalInputs:last-child {
+#modalBackground #modal .modalInputs:last-child {
   border: none;
+}
+
+#list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#list h1 {
+  display: inline;
+  text-align: center;
+  font-weight: 100;
+  padding: 5px;
+  border-radius: 5px;
+  margin: 10px 0;
+}
+#list #listData {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 50px;
+}
+#list #listData .drinkItem {
+  display: flex;
+  flex: 0 0 25%;
+  align-items: center;
+  flex-direction: column;
+  justify-content: space-between;
+  text-decoration: none;
+  margin: 0 auto;
+  margin-top: 25px;
+}
+#list #listData .drinkItem p:hover {
+  color: #ad9b9b;
+}
+#list #listData .drinkItem p {
+  border: none;
+  color: #000;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+#list #listData .drinkItem p:hover {
+  color: #ad9b9b;
+}
+#list #listData .drinkItem img {
+  max-width: 225px;
+  border-radius: 0 15px 0 15px;
+  box-shadow: 3px 6px 6px #717070;
+}
+#list .letterPagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 5% 50px 5%;
+}
+#list .letterPagination a {
+  text-decoration: none;
+  color: hotpink;
+  font-size: 18px;
+}
+#list .letterPagination a:visited {
+  color: hotpink;
+}
+#list .letterPagination a:hover {
+  color: #000;
+}
+
+#view .siteBtn {
+  text-decoration: none;
+  color: #000;
+  font-size: 17px;
+  padding: 15px;
+  border-radius: 10px;
+  border-radius: 0 15px 0 15px;
+  border: 1px solid #000;
+  box-shadow: 3px 6px 6px #ad9b9b;
+}
+#view .siteBtn:hover {
+  background-color: #e8e3e3;
+}
+#view #viewItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  padding-top: 50px;
+}
+#view #viewItem img {
+  max-width: 325px;
+  width: 30%;
+  border-radius: 0 15px 0 15px;
+  box-shadow: 3px 6px 6px #717070;
+}
+#view #viewItem #viewData {
+  width: 50%;
+  padding: 15px;
+  border-radius: 5px;
+}
+#view #viewItem #viewData h2 {
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+#view #viewItem #viewData .viewInfo {
+  margin-bottom: 25px;
+}
+#view #viewItem #viewData .viewInfo p {
+  margin-bottom: 5px;
+}
+#view #viewItem #viewData .viewInfo li {
+  margin-left: 25px;
+  margin-bottom: 5px;
 }
 
 /*# sourceMappingURL=styles.css.map */
