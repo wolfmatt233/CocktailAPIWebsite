@@ -110,6 +110,13 @@ footer {
   font-size: 16px;
 }
 
+#username::placeholder,
+#password::placeholder,
+#email::placeholder {
+  color: #bcb5b5;
+  opacity: 1;
+}
+
 #modalBackground {
   display: none;
   background-color: rgba(0, 0, 0, 0.7);
@@ -125,27 +132,47 @@ footer {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  justify-content: space-evenly;
   border: 1px solid #000;
   background-color: #fff;
   border-radius: 10px;
+  overflow: hidden;
 }
-#modalBackground #modal .modalInputs {
+#modalBackground #modal #modalContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  border-bottom: 1px solid #000;
+}
+#modalBackground #modal #modalContent .modalInputs {
   width: 50%;
   display: flex;
   flex-direction: column;
   padding: 20px;
   border-right: 1px solid #000;
 }
-#modalBackground #modal .modalInputs input[type=text],
-#modalBackground #modal .modalInputs input[type=email],
-#modalBackground #modal .modalInputs input[type=password] {
-  margin-bottom: 10px;
+#modalBackground #modal #modalContent .modalInputs input[type=submit] {
+  padding: 5px;
+  cursor: pointer;
 }
-#modalBackground #modal .modalInputs:last-child {
+#modalBackground #modal #modalContent .modalInputs input[type=text],
+#modalBackground #modal #modalContent .modalInputs input[type=email],
+#modalBackground #modal #modalContent .modalInputs input[type=password] {
+  margin-bottom: 10px;
+  padding: 3px;
+}
+#modalBackground #modal #modalContent .modalInputs:last-child {
   border: none;
+}
+#modalBackground #modal #closeBtn {
+  display: flex;
+  justify-content: center;
+  padding: 5px 0;
+  color: red;
+  text-decoration: none;
+}
+#modalBackground #modal #closeBtn:hover {
+  background-color: rgb(219, 113, 113);
+  color: #000;
 }
 
 #list {

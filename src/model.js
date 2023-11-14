@@ -18,15 +18,15 @@ import {
   query,
 } from "firebase/firestore";
 import { firebaseConfig } from "./credentials";
+import Swal from "sweetalert2";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 var globalUser = null; //application wide variable to check user status
-var currentItem = null;
 
 onAuthStateChanged(auth, (user) => {
-  if (user) {
+  if (user !== null) {
     // User is signed in
     globalUser = user;
     userModal(); //modal needs to know the user state before being called
@@ -34,8 +34,7 @@ onAuthStateChanged(auth, (user) => {
   } else {
     // User is signed out
     userModal();
-    updateUserDisplay();
-    console.log("You need to sign in.");
+    console.log("Signed out.");
   }
 });
 
@@ -47,64 +46,101 @@ const byName = "s=";
 const byId = "i=";
 const byFirstLetter = "f=";
 
+//User feedback
+const Toast = Swal.mixin({
+  toast: true,
+  position: "bottom-end",
+  showConfirmButton: false,
+  timer: 5000,
+  timerProgressBar: true,
+  didOpen: (toast) => {
+    toast.onmouseenter = Swal.stopTimer;
+    toast.onmouseleave = Swal.resumeTimer;
+  },
+});
+
 //----------USER CRUD----------\\
 
 function userModal() {
-  updateUserDisplay();
+  if (globalUser !== null) {
+    //if signed in, display logout button and username
+    $("#logout").css("display", "block");
+    $("#userWrapper p").html(globalUser.displayName);
 
-  //if there is a logged in user
-  if (globalUser === null) {
-    //allow modal open
-    $("#userWrapper").on("click", () => {
-      $("#modalBackground").css("display", "block");
-      $("#modal").html(`
-        <div class="modalInputs">
-            <input type="text" id="uNameCreate" placeholder="Username" class="paramInput" />
-            <input type="email" id="emailCreate" placeholder="Email" class="paramInput" />
-            <input type="password" id="pwCreate" placeholder="Password" class="paramInput" />
-            <input type="submit" value="Create Account" id="createAcctBtn" />
-            <div class="error"></div>
-        </div>
-        <div class="modalInputs">
-          <input type="email" id="email" placeholder="Email" class="paramInput" />
-          <input type="password" id="pw" placeholder="Password" class="paramInput" />
-          <input type="submit" value="Login" id="loginBtn" />
-        </div>
-      `);
-
-      $("#createAcctBtn").on("click", () => {
-        createUser();
-      });
-
-      $("#loginBtn").on("click", () => {
-        loginUser();
-      });
-    });
-
-    //close modal on click off
-    $("#modalBackground").on("click", () => {
-      $("#modalBackground").css("display", "none");
-    });
-  } else {
     //listen for logout click
     $("#logout").on("click", () => {
       logoutUser(auth);
     });
+  } else {
+    //if not signed in, display "sign in" and no log out button
+    $("#logout").css("display", "none");
+    $("#userWrapper p").html("Sign In");
+
+    //send to sign in or create forms via buttons
+    $("#userWrapper").on("click", () => {
+      Swal.fire({
+        title: "Do have an account?",
+        icon: "question",
+        showCancelButton: true,
+        showDenyButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        cancelButtonText: "Cancel",
+        denyButtonText: "Create Account",
+        denyButtonColor: "#3085d6",
+        confirmButtonText: "Sign In",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          Swal.fire({
+            title: "Log In With Existing Account",
+            html: `
+              <input type="email" id="email" class="swal2-input" placeholder="Email">
+              <input type="password" id="password" class="swal2-input" placeholder="Password">
+            `,
+            focusConfirm: false,
+            icon: "info",
+            confirmButtonText: "Log In",
+            showCancelButton: true,
+            cancelButtonText: "Cancel",
+            cancelButtonColor: "#d33",
+            confirmButtonColor: "#3085d6",
+            preConfirm: () => {
+              let emailInput = $("#email").val();
+              let passwordInput = $("#password").val();
+              loginUser(emailInput, passwordInput);
+            },
+          });
+        } else if (result.isDenied) {
+          Swal.fire({
+            title: "Create Account",
+            html: `
+              <input type="text" id="username" class="swal2-input" placeholder="Username">
+              <input type="email" id="email" class="swal2-input" placeholder="Email">
+              <input type="password" id="password" class="swal2-input" placeholder="Password">
+            `,
+            focusConfirm: false,
+            icon: "info",
+            confirmButtonText: "Create",
+            showCancelButton: true,
+            cancelButtonText: "Cancel",
+            cancelButtonColor: "#d33",
+            preConfirm: () => {
+              let usernameInput = $("#username").val();
+              let emailInput = $("#email").val();
+              let passwordInput = $("#password").val();
+              createUser(usernameInput, emailInput, passwordInput);
+            },
+          });
+        }
+      });
+    });
   }
 }
 
-function createUser() {
-  $(".error").html("");
-  let uName = $("#uNameCreate").val();
-  let email = $("#emailCreate").val();
-  let pw = $("#pwCreate").val();
-
-  if (!uName || !email || !pw) {
-    return $(".error").html("Form must be complete.").css("color", "red");
-  }
-
+function createUser(uName, email, pw) {
   createUserWithEmailAndPassword(auth, email, pw)
     .then((userCredentials) => {
+      //created profile: username, email, pw
       updateProfile(auth.currentUser, {
         displayName: uName,
       });
@@ -114,7 +150,7 @@ function createUser() {
         email: email,
         favorites: [],
         reviews: [],
-        customLists: [],
+        lists: [],
         userId: userCredentials.user.uid,
         username: uName,
       };
@@ -122,35 +158,51 @@ function createUser() {
       addUser(newUser);
 
       console.log("Created ", userCredentials.user);
-
-      clearForms();
-      updateUserDisplay();
     })
     .catch((error) => {
       console.log("Error creating user: ", error.message);
+      Toast.fire({
+        icon: "error",
+        title: "Error creating an account!",
+        text: error.message
+      });
     });
 }
 
 async function addUser(newUser) {
   try {
-    const docRef = await addDoc(collection(db, "CocktailDB"), newUser);
+    const docRef = await addDoc(collection(db, "CocktailDBUsers"), newUser);
+    Toast.fire({
+      icon: "success",
+      title: "Account created successfully!",
+    });
     console.log("Doc id: " + docRef.id);
   } catch (e) {
     console.log("Error adding to db: ", e);
+    Toast.fire({
+      icon: "error",
+      title: "Error creating an account!",
+      text: e.message
+    });
   }
 }
 
-function loginUser() {
-  let email = $("#email").val();
-  let password = $("#pw").val();
-
+function loginUser(email, password) {
   signInWithEmailAndPassword(auth, email, password)
     .then((userCredentials) => {
-      clearForms();
-      updateUserDisplay();
+      userModal();
+      Toast.fire({
+        icon: "success",
+        title: "Signed in successfully!",
+      });
     })
     .catch((e) => {
-      console.log("Error Logging in", e.message);
+      console.log("Error signing in", e.message);
+      Toast.fire({
+        icon: "error",
+        title: "Error signing in!",
+        text: error.message
+      });
     });
 }
 
@@ -158,28 +210,19 @@ function logoutUser(auth) {
   signOut(auth)
     .then(() => {
       globalUser = null; //set current
-      updateUserDisplay();
+      userModal();
+      Toast.fire({
+        icon: "success",
+        title: "Signed out successfully!",
+      });
     })
     .catch((e) => {
       console.log("Error signing out: ", e.message);
+      Toast.fire({
+        icon: "error",
+        title: "Error signing out!",
+      });
     });
-}
-
-function clearForms() {
-  $("#modalBackground").css("display", "none");
-  $("#userModal .modalInputs .paramInput").val("");
-}
-
-function updateUserDisplay() {
-  if (globalUser) {
-    //if signed in, display logout button and username
-    $("#logout").css("display", "block");
-    $("#userWrapper p").html(globalUser.displayName);
-  } else {
-    //if not signed in, display "sign in" and no log out button
-    $("#logout").css("display", "none");
-    $("#userWrapper p").html("Sign In");
-  }
 }
 
 function viewUser() {
@@ -321,7 +364,7 @@ export function search() {
 function getPageAndFunction(page, myFunction) {
   $.get(`pages/${page}.html`, (data) => {
     $("#app").html(data);
-    myFunction;
+    myFunction();
   });
 }
 
@@ -354,16 +397,19 @@ export function changeRoute() {
       getPageAndFunction(pageID, view(itemID));
       break;
     case "search":
-      $.get(`pages/search.html`, function (data) {
-        $("#app").html(data);
-        search();
-      });
+      getPageAndFunction(pageID, search);
       break;
-    case "signin":
-      // log in
+    case "user":
+      //user page
       break;
-    case "signout":
-      // log out
+    case "lists":
+      //custom lists from user
+      break;
+    case "favorites":
+      //personal favorites
+      break;
+    case "reviews":
+      //reviews on a certain item
       break;
     // default:
     //   $.get(`pages/${pageID}.html`, function (data) {
