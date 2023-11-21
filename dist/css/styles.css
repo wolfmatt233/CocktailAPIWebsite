@@ -86,6 +86,7 @@ nav .loginOut #userWrapper {
   display: flex;
   align-items: center;
   justify-content: space-evenly;
+  cursor: pointer;
 }
 nav .loginOut #userWrapper i {
   border: 2px solid #000;
@@ -108,71 +109,6 @@ footer {
   background-color: #ffffff;
   height: 60px;
   font-size: 16px;
-}
-
-#username::placeholder,
-#password::placeholder,
-#email::placeholder {
-  color: #bcb5b5;
-  opacity: 1;
-}
-
-#modalBackground {
-  display: none;
-  background-color: rgba(0, 0, 0, 0.7);
-  z-index: 99;
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-}
-#modalBackground #modal {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  border: 1px solid #000;
-  background-color: #fff;
-  border-radius: 10px;
-  overflow: hidden;
-}
-#modalBackground #modal #modalContent {
-  display: flex;
-  align-items: center;
-  justify-content: space-evenly;
-  border-bottom: 1px solid #000;
-}
-#modalBackground #modal #modalContent .modalInputs {
-  width: 50%;
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-  border-right: 1px solid #000;
-}
-#modalBackground #modal #modalContent .modalInputs input[type=submit] {
-  padding: 5px;
-  cursor: pointer;
-}
-#modalBackground #modal #modalContent .modalInputs input[type=text],
-#modalBackground #modal #modalContent .modalInputs input[type=email],
-#modalBackground #modal #modalContent .modalInputs input[type=password] {
-  margin-bottom: 10px;
-  padding: 3px;
-}
-#modalBackground #modal #modalContent .modalInputs:last-child {
-  border: none;
-}
-#modalBackground #modal #closeBtn {
-  display: flex;
-  justify-content: center;
-  padding: 5px 0;
-  color: red;
-  text-decoration: none;
-}
-#modalBackground #modal #closeBtn:hover {
-  background-color: rgb(219, 113, 113);
-  color: #000;
 }
 
 #list {
@@ -282,6 +218,90 @@ footer {
 #view #viewItem #viewData .viewInfo li {
   margin-left: 25px;
   margin-bottom: 5px;
+}
+#view #viewItem #viewData button {
+  width: 50%;
+  border: 1px solid #a8a5a5;
+  padding: 10px 5px;
+  border-radius: 15px;
+  cursor: pointer;
+}
+#view #viewItem #viewData #removeFromFavorites {
+  cursor: pointer;
+}
+#view #viewItem #viewData #removeFromFavorites .remove {
+  display: none;
+}
+
+#user #userData hr {
+  border: 1px solid #000;
+  margin: 20px 0;
+}
+#user #userData .userSection {
+  text-align: center;
+}
+#user #userData .userSection h2 {
+  text-align: center;
+  border-bottom: 1px solid #000;
+  padding-bottom: 7px;
+  display: inline-block;
+  margin-bottom: 25px;
+}
+#user #userData .userSection #userInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+#user #userData .userSection #userInfo .userInfoDetail {
+  width: 30%;
+}
+#user #userData .userSection #userInfo .userInfoDetail input,
+#user #userData .userSection #userInfo .userInfoDetail button {
+  width: 100%;
+  height: 30px;
+  border: 1px solid #a8a5a5;
+  border-radius: 5px;
+}
+#user #userData .userSection #userInfo .userInfoDetail input {
+  padding: 20px 5px;
+  margin-bottom: 10px;
+}
+#user #userData .userSection #userInfo .userInfoDetail .editBtnGroup {
+  display: flex;
+  width: 100%;
+}
+#user #userData .userSection #userInfo .userInfoDetail .editBtnGroup .updateUNameBtn, #user #userData .userSection #userInfo .userInfoDetail .editBtnGroup .cancelUNameEdit {
+  display: none;
+}
+#user #userData .userSection #userFavorites {
+  display: flex;
+  overflow-x: scroll;
+  scrollbar-color: pink #fff;
+  scrollbar-width: thin;
+  scroll-behavior: smooth;
+}
+#user #userData .userSection #userFavorites .userDrinkItem {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: space-between;
+  text-decoration: none;
+  margin-right: 20px;
+  margin-bottom: 30px;
+}
+#user #userData .userSection #userFavorites .userDrinkItem:hover p {
+  color: #e5697e;
+}
+#user #userData .userSection #userFavorites .userDrinkItem p {
+  border: none;
+  color: #000;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+#user #userData .userSection #userFavorites .userDrinkItem img {
+  max-width: 150px;
+  border-radius: 0 15px 0 15px;
+  box-shadow: 3px 6px 6px #717070;
 }
 
 /*# sourceMappingURL=styles.css.map */

@@ -49,6 +49,22 @@
           margin-bottom: 5px;
         }
       }
+
+      button {
+        width: 50%;
+        border: 1px solid #a8a5a5;
+        padding: 10px 5px;
+        border-radius: 15px;
+        cursor: pointer;
+      }
+
+      #removeFromFavorites {
+        cursor: pointer;
+
+        .remove {
+          display: none;
+        }
+      }
     }
   }
 }

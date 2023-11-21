@@ -1,4 +1,50 @@
 <div id="user">
-    <h1>User Page</h1>
-    <div id="userData"></div>
+  <div id="userData">
+    <div class="userSection">
+      <h2>Your Information</h2>
+      <div id="userInfo">
+        <div class="userInfoDetail">
+          <input type="text" id="editUName" disabled />
+          <div class="editBtnGroup">
+            <button id="editUNameBtn">Edit</button>
+            <button id="updateUNameBtn">Update</button>
+            <button id="cancelUNameEdit">Cancel</button>
+          </div>
+        </div>
+        <div class="userInfoDetail">
+          <input type="text" id="editEmail" disabled />
+          <div class="editBtnGroup">
+            <button id="editEmailBtn">Edit</button>
+            <button id="updateEmailBtn">Update</button>
+            <button id="cancelEmailEdit">Cancel</button>
+          </div>
+        </div>
+        <div class="userInfoDetail">
+          <input type="text" id="editPw" placeholder="New Password" disabled />
+          <div class="editBtnGroup">
+            <button id="editBtn">Edit</button>
+            <button id="updateBtn">Update</button>
+            <button id="cancelEdit">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr />
+
+    <div class="userSection">
+      <h2>Favorites</h2>
+      <div id="userFavorites"></div>
+    </div>
+
+    <hr />
+
+    <div id="userGraphs"></div>
+
+    <hr />
+
+    <div id="userLists">
+      <button id="showLists">View Your Lists</button>
+    </div>
+  </div>
 </div>

@@ -1,14 +1,12 @@
-import { initializeApp } from "firebase/app";
 import {
-  getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
   updateProfile,
+  updatePassword,
 } from "firebase/auth";
 import {
-  getFirestore,
   getDoc,
   collection,
   addDoc,
@@ -16,29 +14,16 @@ import {
   doc,
   where,
   query,
+  updateDoc,
 } from "firebase/firestore";
-import { firebaseConfig } from "./credentials";
+import { auth } from "./credentials";
+import { db } from "./credentials";
 import Swal from "sweetalert2";
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
 var globalUser = null; //application wide variable to check user status
 
-onAuthStateChanged(auth, (user) => {
-  if (user !== null) {
-    // User is signed in
-    globalUser = user;
-    userModal(); //modal needs to know the user state before being called
-    console.log("Signed in.");
-  } else {
-    // User is signed out
-    userModal();
-    console.log("Signed out.");
-  }
-});
+//----API CONSTANTS----\\
 
-//Api constants
 const baseURL = "https://www.thecocktaildb.com/api/json/v1/1/";
 const searchURL = "search.php?";
 const lookupURL = "lookup.php?";
@@ -46,7 +31,41 @@ const byName = "s=";
 const byId = "i=";
 const byFirstLetter = "f=";
 
-//User feedback
+//----USER STATE CHANGE----\\
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    //----SIGNED IN----\\
+    globalUser = user;
+
+    //Show logout and username
+    $("#logout").css("display", "block");
+    $("#userWrapper p").html(globalUser.displayName);
+    $("#userWrapper").attr("href", "#user"); //enable user page routing
+
+    //listen for logout click
+    $("#logout").on("click", () => {
+      logoutUser(auth);
+    });
+
+    viewUser();
+    console.log("Signed in.");
+  } else {
+    //----SIGNED OUT----\\
+    globalUser = null;
+
+    //display "sign in" and no log out button
+    $("#logout").css("display", "none");
+    $("#userWrapper p").html("Sign In");
+    $("#userWrapper").attr("href", null);
+
+    userModal();
+    console.log("Signed out.");
+  }
+});
+
+//------USER FEEDBACK------\\
+
 const Toast = Swal.mixin({
   toast: true,
   position: "bottom-end",
@@ -59,25 +78,75 @@ const Toast = Swal.mixin({
   },
 });
 
+const ToastMessage = (icon, title, message) =>
+  Toast.fire({
+    icon: icon,
+    title: title,
+    text: message,
+  });
+
+//---------PAGE ROUTING---------\\
+
+function pagination(letter) {
+  $.get(`pages/list.html`, (data) => {
+    $("#app").html(data);
+    if (letter == "home") {
+      index("a");
+    } else {
+      index(letter);
+    }
+  });
+}
+
+export function changeRoute() {
+  let pageID = window.location.hash.replace("#", "");
+  let pageLetterID = pageID.split("_").pop(); //letter for pagination
+  let itemID = pageID.split("_").pop(); //item id for single view
+  pageID = pageID.split("_").shift(); //page id for index view
+
+  switch (pageID) {
+    case "":
+      pagination("a");
+      break;
+    case "home":
+      pagination(pageLetterID);
+      break;
+    case "view":
+      $.get(`pages/view.html`, (data) => {
+        $("#app").html(data);
+        view(itemID);
+      });
+      break;
+    case "search":
+      $.get(`pages/search.html`, (data) => {
+        $("#app").html(data);
+        search();
+      });
+      break;
+    case "user":
+      $.get(`pages/user.html`, (data) => {
+        $("#app").html(data);
+        viewUser();
+      });
+      break;
+    case "lists":
+      //custom lists from user
+      break;
+    case "favorites":
+      //personal favorites
+      break;
+    case "reviews":
+      //reviews on a certain item
+      break;
+  }
+}
+
 //----------USER CRUD----------\\
 
 function userModal() {
-  if (globalUser !== null) {
-    //if signed in, display logout button and username
-    $("#logout").css("display", "block");
-    $("#userWrapper p").html(globalUser.displayName);
-
-    //listen for logout click
-    $("#logout").on("click", () => {
-      logoutUser(auth);
-    });
-  } else {
-    //if not signed in, display "sign in" and no log out button
-    $("#logout").css("display", "none");
-    $("#userWrapper p").html("Sign In");
-
-    //send to sign in or create forms via buttons
-    $("#userWrapper").on("click", () => {
+  //send to sign in or create forms via buttons
+  $("#userWrapper").on("click", () => {
+    if (!globalUser) {
       Swal.fire({
         title: "Do have an account?",
         icon: "question",
@@ -94,9 +163,9 @@ function userModal() {
           Swal.fire({
             title: "Log In With Existing Account",
             html: `
-              <input type="email" id="email" class="swal2-input" placeholder="Email">
-              <input type="password" id="password" class="swal2-input" placeholder="Password">
-            `,
+                <input type="email" id="email" class="swal2-input" placeholder="Email">
+                <input type="password" id="password" class="swal2-input" placeholder="Password">
+              `,
             focusConfirm: false,
             icon: "info",
             confirmButtonText: "Log In",
@@ -114,10 +183,10 @@ function userModal() {
           Swal.fire({
             title: "Create Account",
             html: `
-              <input type="text" id="username" class="swal2-input" placeholder="Username">
-              <input type="email" id="email" class="swal2-input" placeholder="Email">
-              <input type="password" id="password" class="swal2-input" placeholder="Password">
-            `,
+                <input type="text" id="username" class="swal2-input" placeholder="Username">
+                <input type="email" id="email" class="swal2-input" placeholder="Email">
+                <input type="password" id="password" class="swal2-input" placeholder="Password">
+              `,
             focusConfirm: false,
             icon: "info",
             confirmButtonText: "Create",
@@ -133,8 +202,8 @@ function userModal() {
           });
         }
       });
-    });
-  }
+    }
+  });
 }
 
 function createUser(uName, email, pw) {
@@ -156,84 +225,139 @@ function createUser(uName, email, pw) {
       };
 
       addUser(newUser);
-
-      console.log("Created ", userCredentials.user);
     })
     .catch((error) => {
-      console.log("Error creating user: ", error.message);
-      Toast.fire({
-        icon: "error",
-        title: "Error creating an account!",
-        text: error.message
-      });
+      ToastMessage("error", "Error creating an account!", error.message);
     });
 }
 
 async function addUser(newUser) {
   try {
-    const docRef = await addDoc(collection(db, "CocktailDBUsers"), newUser);
-    Toast.fire({
-      icon: "success",
-      title: "Account created successfully!",
+    await addDoc(collection(db, "CocktailDBUsers"), newUser).then(() => {
+      ToastMessage("success", "Success", "Account created successfully!");
     });
-    console.log("Doc id: " + docRef.id);
   } catch (e) {
-    console.log("Error adding to db: ", e);
-    Toast.fire({
-      icon: "error",
-      title: "Error creating an account!",
-      text: e.message
-    });
+    ToastMessage("error", "Error creating an account!", error.message);
   }
 }
 
 function loginUser(email, password) {
   signInWithEmailAndPassword(auth, email, password)
     .then((userCredentials) => {
-      userModal();
-      Toast.fire({
-        icon: "success",
-        title: "Signed in successfully!",
-      });
+      globalUser = auth.currentUser;
+      ToastMessage("success", "Success", "Signed in successfully!");
     })
-    .catch((e) => {
-      console.log("Error signing in", e.message);
-      Toast.fire({
-        icon: "error",
-        title: "Error signing in!",
-        text: error.message
-      });
+    .catch((error) => {
+      ToastMessage("error", "Error signing in!", error.message);
     });
 }
 
 function logoutUser(auth) {
   signOut(auth)
     .then(() => {
-      globalUser = null; //set current
-      userModal();
-      Toast.fire({
-        icon: "success",
-        title: "Signed out successfully!",
-      });
+      globalUser = null;
+      ToastMessage("success", "Success", "Signed out successfully!");
+      pagination("a");
     })
-    .catch((e) => {
-      console.log("Error signing out: ", e.message);
-      Toast.fire({
-        icon: "error",
-        title: "Error signing out!",
-      });
+    .catch((error) => {
+      ToastMessage("error", "Error signing out!", error.message);
     });
 }
 
-function viewUser() {
-  //get user information from storage to make graphs
-  if (!globalUser) {
-    $("#app").html("You need to log in or sign up first.");
-  }
+async function viewUser() {
+  // if (globalUser) {
+    //get all documents from the database aka collection
+    const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
+
+    querySnapshot.forEach((doc) => {
+      doc = doc.data();
+
+      //get doc relating to the current user
+      if (doc.userId == globalUser.uid) {
+        $("#editUName").attr("placeholder", doc.username);
+        $("#editEmail").attr("placeholder", doc.email);
+
+        //get favorites array
+        doc.favorites.forEach((id) => {
+          let byIdUrl = `${baseURL}${lookupURL}${byId}${id}`;
+
+          $.getJSON(byIdUrl, (data) => {
+            data = data.drinks[0];
+            $("#userFavorites")
+              .append(`
+                <a href="#view_${data.idDrink}" class="userDrinkItem">
+                  <p>${data.strDrink}</p>
+                  <img src="${data.strDrinkThumb}" alt="DrinkImg">
+                </a>
+              `);
+          });
+        });
+        //show stats from favorites
+      }
+    });
+
+    function editButtons(type) {
+
+    }
+
+    //allow editing for input boxes on button click, show password box and new button
+    $("#editUNameBtn").on("click", () => {
+      
+    });
+
+    //call update function to save changes
+    $("#updateUserInfo").on("click", () => {
+      updateUser();
+    });
+
+    $("#cancelEdit").on("click", () => {
+      
+    });
+  // } else {
+    // $("#userData").html("You need to log in.");
+  // }
 }
 
-function updateUser() {
-  //username, password, email, bio
+async function updateUser() {
+  //username, password, email
+  let email = $("#editEmail").val();
+  let uName = $("#editUName").val();
+  let pw = $("#editPassword").val();
+
+  if (!email || !uName || !pw) {
+    return;
+  }
+
+  const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
+
+  //1. update password
+  updatePassword(globalUser, pw).then(() => {
+    //2. update document in database
+    querySnapshot.forEach((doc) => {
+      if (doc.data().userId == globalUser.uid) {
+        updateDoc(doc.ref, { email: email, username: uName })
+          .then(() => {
+            //3. update profile info
+            updateProfile(globalUser, {
+              displayName: uName,
+              email: email,
+            });
+
+            $("#editEmail, #editUName, #editPassword").prop("disabled", true);
+            $("#editUserInfo").css("display", "block");
+            $("#updateUserInfo, #editUserPassword").css("display", "none");
+            ToastMessage(
+              "success",
+              "Success",
+              "Information updated successfully!"
+            );
+          })
+          .catch((error) => {
+            ToastMessage("error", "Error updating!", error.message);
+          });
+      }
+    });
+  });
 }
 
 function deleteUser() {
@@ -242,8 +366,109 @@ function deleteUser() {
 
 //---------USER ACTIONS---------\\
 
-function addToFavorites() {
+async function addToFavorites(id) {
   //from details view, add a certain item to a user's favorites
+  const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
+
+  //for each document
+  querySnapshot.forEach((doc) => {
+    //find the document relating to the current user
+    if (doc.data().userId == globalUser.uid) {
+      let newFavorite = doc.data().favorites; //favorites array
+      let alreadyAdded = 0;
+
+      //for each favorite
+      newFavorite.forEach((item) => {
+        //if current id matches favorite item, increase var by 1
+        if (item == id) {
+          alreadyAdded += 1;
+        }
+      });
+
+      //if there has been an item added, return, else update the doc
+      if (alreadyAdded > 0) {
+        checkIfFavorite(id);
+      } else {
+        newFavorite.push(id);
+        updateDoc(doc.ref, { favorites: newFavorite })
+          .then(() => {
+            ToastMessage("success", "Added", "Added to favorites!");
+            checkIfFavorite(id);
+          })
+          .catch((error) => {
+            ToastMessage("error", "Error", error.message);
+          });
+      }
+    }
+  });
+}
+
+async function checkIfFavorite(id) {
+  //from details view, add a certain item to a user's favorites
+  const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
+
+  //for each document
+  querySnapshot.forEach((doc) => {
+    //find the document relating to the current user
+    if (doc.data().userId == globalUser.uid) {
+      let newFavorite = doc.data().favorites; //favorites array
+      let alreadyAdded = 0;
+
+      //for each favorite
+      newFavorite.forEach((item) => {
+        //if current id matches favorite item, increase var by 1
+        if (item == id) {
+          alreadyAdded += 1;
+        }
+      });
+
+      //if there has been an item added, return, else update the doc
+      if (alreadyAdded > 0) {
+        $("#viewData").append("");
+        $("#addToFavorites").attr("id", "removeFromFavorites");
+        $("#removeFromFavorites").html(
+          `<span class="favorite">Favorited</span><span class="remove">Remove</span>`
+        );
+        $("#removeFromFavorites").on("mouseenter", () => {
+          $("#removeFromFavorites").css("background-color", "red");
+          $(".favorite").css("display", "none");
+          $(".remove").css("display", "block");
+        });
+        $("#removeFromFavorites").on("mouseleave", () => {
+          $("#removeFromFavorites").css("background-color", "#fff");
+          $(".favorite").css("display", "block");
+          $(".remove").css("display", "none");
+        });
+      } else {
+        return;
+      }
+    }
+  });
+}
+
+function removeFromFavorites(id) {
+  console.log("Remove", id);
+  //from details view, add a certain item to a user's favorites
+  // const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
+
+  // //for each document
+  // querySnapshot.forEach((doc) => {
+  //   //find the user document
+  //   if (doc.data().userId == globalUser.uid) {
+  //     //remove it from the favorites array
+  //     let newFavoriteArr = doc.data().favorites;
+  //     let alreadyAdded = "";
+
+  //     //for each favorite
+  //     newFavoriteArr.forEach((item) => {
+  //       //if current id matches favorite item, increase set var
+  //       if (item == id) {
+  //         alreadyAdded = item;
+  //         console.log("item")
+  //       }
+  //     });
+  //   }
+  // });
 }
 
 function addReview() {
@@ -253,7 +478,7 @@ function addReview() {
 
 //----------API----------\\
 
-export function index(letter) {
+function index(letter) {
   let byLetterURL = `${baseURL}${searchURL}${byFirstLetter}${letter}`;
   let alphabet = [..."abcdefghijklmnopqrstuvwxyz"];
 
@@ -277,9 +502,8 @@ export function index(letter) {
   });
 }
 
-export function view(id) {
+async function view(id) {
   let byIdUrl = `${baseURL}${lookupURL}${byId}${id}`;
-  console.log(byIdUrl);
 
   $.getJSON(byIdUrl, (data) => {
     data = data.drinks[0];
@@ -290,6 +514,23 @@ export function view(id) {
     $("#extraInfo").append(`<li>${data.strAlcoholic}</li>`);
     $("#extraInfo").append(`<li>${data.strCategory}</li>`);
     $("#extraInfo").append(`<li>Use with a ${data.strGlass}</li>`);
+
+    if (globalUser) {
+      $("#viewData").append(
+        `<button id="addToFavorites">Add to Favorites</button>`
+      );
+      checkIfFavorite(id);
+    }
+
+    //listen for button to add a favorite
+    $("#addToFavorites").on("click", () => {
+      addToFavorites(id);
+    });
+
+    //listen for button to remove a favorite
+    $("#removeFromFavorites").on("click", () => {
+      removeFromFavorites(id);
+    });
 
     instructions.forEach((sentence) => {
       if (sentence == "") {
@@ -357,63 +598,4 @@ export function search() {
       });
     }
   });
-}
-
-//---------PAGE ROUTING---------\\
-
-function getPageAndFunction(page, myFunction) {
-  $.get(`pages/${page}.html`, (data) => {
-    $("#app").html(data);
-    myFunction();
-  });
-}
-
-function pagination(letter) {
-  $.get(`pages/list.html`, (data) => {
-    $("#app").html(data);
-    if (letter == "home") {
-      index("a");
-    } else {
-      index(letter);
-    }
-  });
-}
-
-export function changeRoute() {
-  let hashTag = window.location.hash;
-  let pageID = hashTag.replace("#", "");
-  let pageLetterID = pageID.split("_").pop(); //letter for pagination
-  let itemID = pageID.split("_").pop(); //item id for single view
-  pageID = pageID.split("_").shift(); //page id for index view
-
-  switch (pageID) {
-    case "":
-      pagination("a");
-      break;
-    case "home":
-      pagination(pageLetterID);
-      break;
-    case "view":
-      getPageAndFunction(pageID, view(itemID));
-      break;
-    case "search":
-      getPageAndFunction(pageID, search);
-      break;
-    case "user":
-      //user page
-      break;
-    case "lists":
-      //custom lists from user
-      break;
-    case "favorites":
-      //personal favorites
-      break;
-    case "reviews":
-      //reviews on a certain item
-      break;
-    // default:
-    //   $.get(`pages/${pageID}.html`, function (data) {
-    //     $("#app").html(data);
-    //   });
-  }
 }
