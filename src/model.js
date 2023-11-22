@@ -43,6 +43,9 @@ onAuthStateChanged(auth, (user) => {
     $("#userWrapper p").html(globalUser.displayName);
     $("#userWrapper").attr("href", "#user"); //enable user page routing
 
+    //if page is reloaded, make sure view has its buttons
+    view(window.location.hash.split("_").pop());
+
     //listen for logout click
     $("#logout").on("click", () => {
       logoutUser(auth);
@@ -257,7 +260,7 @@ function logoutUser(auth) {
     .then(() => {
       globalUser = null;
       ToastMessage("success", "Success", "Signed out successfully!");
-      pagination("a");
+      window.location.hash = "#home";
     })
     .catch((error) => {
       ToastMessage("error", "Error signing out!", error.message);
@@ -265,106 +268,125 @@ function logoutUser(auth) {
 }
 
 async function viewUser() {
-  // if (globalUser) {
-    //get all documents from the database aka collection
-    const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
-
-    querySnapshot.forEach((doc) => {
-      doc = doc.data();
-
-      //get doc relating to the current user
-      if (doc.userId == globalUser.uid) {
-        $("#editUName").attr("placeholder", doc.username);
-        $("#editEmail").attr("placeholder", doc.email);
-
-        //get favorites array
-        doc.favorites.forEach((id) => {
-          let byIdUrl = `${baseURL}${lookupURL}${byId}${id}`;
-
-          $.getJSON(byIdUrl, (data) => {
-            data = data.drinks[0];
-            $("#userFavorites")
-              .append(`
-                <a href="#view_${data.idDrink}" class="userDrinkItem">
-                  <p>${data.strDrink}</p>
-                  <img src="${data.strDrinkThumb}" alt="DrinkImg">
-                </a>
-              `);
-          });
-        });
-        //show stats from favorites
-      }
-    });
-
-    function editButtons(type) {
-
-    }
-
-    //allow editing for input boxes on button click, show password box and new button
-    $("#editUNameBtn").on("click", () => {
-      
-    });
-
-    //call update function to save changes
-    $("#updateUserInfo").on("click", () => {
-      updateUser();
-    });
-
-    $("#cancelEdit").on("click", () => {
-      
-    });
-  // } else {
-    // $("#userData").html("You need to log in.");
-  // }
-}
-
-async function updateUser() {
-  //username, password, email
-  let email = $("#editEmail").val();
-  let uName = $("#editUName").val();
-  let pw = $("#editPassword").val();
-
-  if (!email || !uName || !pw) {
-    return;
-  }
-
+  //get all documents from the database aka collection
   const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
 
-  //1. update password
-  updatePassword(globalUser, pw).then(() => {
-    //2. update document in database
-    querySnapshot.forEach((doc) => {
-      if (doc.data().userId == globalUser.uid) {
-        updateDoc(doc.ref, { email: email, username: uName })
-          .then(() => {
-            //3. update profile info
-            updateProfile(globalUser, {
-              displayName: uName,
-              email: email,
-            });
+  querySnapshot.forEach((doc) => {
+    doc = doc.data();
 
-            $("#editEmail, #editUName, #editPassword").prop("disabled", true);
-            $("#editUserInfo").css("display", "block");
-            $("#updateUserInfo, #editUserPassword").css("display", "none");
-            ToastMessage(
-              "success",
-              "Success",
-              "Information updated successfully!"
-            );
-          })
-          .catch((error) => {
-            ToastMessage("error", "Error updating!", error.message);
-          });
-      }
-    });
+    //get doc relating to the current user
+    if (doc.userId == globalUser.uid) {
+      $("#editUName").attr("placeholder", doc.username);
+      $("#editEmail").attr("placeholder", doc.email);
+
+      //get favorites array
+      // doc.favorites.forEach((id) => {
+      //   let byIdUrl = `${baseURL}${lookupURL}${byId}${id}`;
+
+      //   $.getJSON(byIdUrl, (data) => {
+      //     data = data.drinks[0];
+      //     $("#userFavorites").append(`
+      //           <a href="#view_${data.idDrink}" class="userDrinkItem">
+      //             <p>${data.strDrink}</p>
+      //             <img src="${data.strDrinkThumb}" alt="DrinkImg">
+      //           </a>
+      //         `);
+      //   });
+      // });
+      //show stats from favorites
+    }
   });
+
+  const editButtons = (type) => {
+    $(`#edit${type}Btn`).css("display", "none");
+    $(`#update${type}Btn, #cancel${type}EditBtn`).css("display", "block");
+    $(`#edit${type}`).prop("disabled", false);
+
+    //close buttons on cancel
+    $(`#cancel${type}EditBtn`).on("click", () => {
+      $(`#edit${type}Btn`).css("display", "block");
+      $(`#update${type}Btn, #cancel${type}EditBtn`).css("display", "none");
+      $(`#edit${type}`).prop("disabled", true);
+      $(`#edit${type}`).prop("value", "");
+    });
+
+    $(`#update${type}Btn`).on("click", () => {
+      let value = $(`#edit${type}`).val();
+      updateUser(type, value);
+
+      $(`#edit${type}Btn`).css("display", "block");
+      $(`#update${type}Btn, #cancel${type}EditBtn`).css("display", "none");
+      $(`#edit${type}`).prop("disabled", true);
+      $(`#edit${type}`).prop("value", "");
+    });
+  };
+
+  //allow editing for input boxes on button click, show password box and new button
+  $("#editUNameBtn, #editEmailBtn, #editPwBtn").on("click", (e) => {
+    let btnType = e.target.id.replace("edit", "");
+    btnType = btnType.replace("Btn", "");
+    editButtons(btnType);
+  });
+}
+
+async function updateUser(type, value) {
+  const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
+  let userDoc;
+
+  querySnapshot.forEach((doc) => {
+    if (doc.data().userId == globalUser.uid) {
+      userDoc = doc;
+    }
+  });
+
+  if (value == "") {
+    return ToastMessage("error", "Error", "You must fill out the form!");
+  } else {
+    if (type === "Email") {
+      //1. update doc in db
+      updateDoc(userDoc.ref, { email: value })
+        .then(() => {
+          //2. update separate user  profile
+          updateProfile(globalUser, {
+            email: value,
+          });
+          ToastMessage("success", "Success", "Email updated successfully!");
+        })
+        .catch((error) => {
+          ToastMessage("error", "Error updating email!", error.message);
+        });
+    } else if (type === "UName") {
+      //1. update doc in db
+      updateDoc(userDoc.ref, { username: value })
+        .then(() => {
+          //2. update separate user profile
+          updateProfile(globalUser, {
+            displayName: value,
+          });
+          $("#userWrapper p").html(value);
+          ToastMessage("success", "Success", "Username updated successfully!");
+        })
+        .catch((error) => {
+          ToastMessage("error", "Error updating username!", error.message);
+        });
+    } else if (type === "Pw") {
+      //update password for user
+      updatePassword(globalUser, value)
+        .then(() => {
+          ToastMessage("success", "Success", "Password updated successfully!");
+        })
+        .catch((error) => {
+          ToastMessage("error", "Error updating password!", error.message);
+        });
+    }
+  }
 }
 
 function deleteUser() {
   //remove document from firestore
 }
 
-//---------USER ACTIONS---------\\
+//----------FAVORITES----------\\
 
 async function addToFavorites(id) {
   //from details view, add a certain item to a user's favorites
@@ -422,58 +444,96 @@ async function checkIfFavorite(id) {
         }
       });
 
-      //if there has been an item added, return, else update the doc
+      //if there has been an item added display proper button, else display the other button
       if (alreadyAdded > 0) {
-        $("#viewData").append("");
         $("#addToFavorites").attr("id", "removeFromFavorites");
         $("#removeFromFavorites").html(
           `<span class="favorite">Favorited</span><span class="remove">Remove</span>`
         );
+
         $("#removeFromFavorites").on("mouseenter", () => {
           $("#removeFromFavorites").css("background-color", "red");
           $(".favorite").css("display", "none");
           $(".remove").css("display", "block");
         });
+
         $("#removeFromFavorites").on("mouseleave", () => {
           $("#removeFromFavorites").css("background-color", "#fff");
           $(".favorite").css("display", "block");
           $(".remove").css("display", "none");
         });
+
+        //listen for button to remove a favorite
+        $("#removeFromFavorites").on("click", () => {
+          removeFromFavorites(id);
+        });
       } else {
-        return;
+        $("#removeFromFavorites")
+          .attr("id", "addToFavorites")
+          .html("Add to Favorites")
+          .css("background-color", "");
+
+        //listen for button to remove a favorite
+        $("#removeFromFavorites").on("click", () => {
+          addToFavorites(id);
+        });
       }
     }
   });
 }
 
-function removeFromFavorites(id) {
-  console.log("Remove", id);
+async function removeFromFavorites(id) {
   //from details view, add a certain item to a user's favorites
-  // const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
+  const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
 
-  // //for each document
-  // querySnapshot.forEach((doc) => {
-  //   //find the user document
-  //   if (doc.data().userId == globalUser.uid) {
-  //     //remove it from the favorites array
-  //     let newFavoriteArr = doc.data().favorites;
-  //     let alreadyAdded = "";
+  querySnapshot.forEach((doc) => {
+    if (doc.data().userId == globalUser.uid) {
+      let newFavoriteArr = doc.data().favorites;
+      let alreadyAdded = "";
 
-  //     //for each favorite
-  //     newFavoriteArr.forEach((item) => {
-  //       //if current id matches favorite item, increase set var
-  //       if (item == id) {
-  //         alreadyAdded = item;
-  //         console.log("item")
-  //       }
-  //     });
-  //   }
-  // });
+      //for each favorite
+      newFavoriteArr.forEach((item, idx) => {
+        //if current id matches favorite item, increase set var
+        if (item == id) {
+          newFavoriteArr.splice(idx, 1);
+          alreadyAdded = item;
+
+          updateDoc(doc.ref, { favorites: newFavoriteArr })
+            .then(() => {
+              ToastMessage("success", "Added", "Removed From favorites!");
+              checkIfFavorite(id);
+            })
+            .catch((error) => {
+              ToastMessage("error", "Error", error.message);
+            });
+        }
+      });
+    }
+  });
 }
 
-function addReview() {
+//----------REVIEWS----------\\
+
+async function addReview(id) {
   //from details view, add a review by the user on a certain item
-  //review added to separate storage. array of reviews, api item id included
+  const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
+  let userDoc = "";
+
+  querySnapshot.forEach((doc) => {
+    //find the document relating to the current user
+    if (doc.data().userId == globalUser.uid) {
+      userDoc = doc;
+    }
+  });
+
+  //modal for text and score
+
+  // let newReview = {
+  //   itemId: id,
+  //   review: review,
+  //   starScore: starScore,
+  //   userId: globalUser.uid,
+  // };
 }
 
 //----------API----------\\
@@ -503,35 +563,23 @@ function index(letter) {
 }
 
 async function view(id) {
+  if(isNaN(id)) {
+    return console.log("different page")
+  }
+
   let byIdUrl = `${baseURL}${lookupURL}${byId}${id}`;
 
   $.getJSON(byIdUrl, (data) => {
     data = data.drinks[0];
     let instructions = data.strInstructions.split(".");
 
-    $("#viewItem").prepend(`<img src="${data.strDrinkThumb}" alt="DrinkImg">`);
+    $("#viewImg").attr("src", `${data.strDrinkThumb}`);
     $("#name").append(`${data.strDrink}`);
     $("#extraInfo").append(`<li>${data.strAlcoholic}</li>`);
     $("#extraInfo").append(`<li>${data.strCategory}</li>`);
     $("#extraInfo").append(`<li>Use with a ${data.strGlass}</li>`);
 
-    if (globalUser) {
-      $("#viewData").append(
-        `<button id="addToFavorites">Add to Favorites</button>`
-      );
-      checkIfFavorite(id);
-    }
-
-    //listen for button to add a favorite
-    $("#addToFavorites").on("click", () => {
-      addToFavorites(id);
-    });
-
-    //listen for button to remove a favorite
-    $("#removeFromFavorites").on("click", () => {
-      removeFromFavorites(id);
-    });
-
+    //get instructions
     instructions.forEach((sentence) => {
       if (sentence == "") {
         return;
@@ -539,6 +587,7 @@ async function view(id) {
       $("#instructions").append(`<li>${sentence}.</li>`);
     });
 
+    //get ingredients
     for (const prop in data) {
       let nums = [
         "1",
@@ -572,8 +621,25 @@ async function view(id) {
       });
     }
   });
-  //get specific item from api, display details
-  //include review, add to favorites, and add to custom list buttons if user is logged in
+
+  //show favorite and review buttons
+  if (globalUser) {
+    $("#viewData").append(
+      `<button id="addToFavorites">Add to Favorites</button>`
+    );
+    $("#viewData").append(`<button id="addReview">Add Review</button>`);
+    checkIfFavorite(id);
+  }
+
+  //listen for button to add a favorite
+  $("#addToFavorites").on("click", () => {
+    addToFavorites(id);
+  });
+
+  $("#addReview").on("click", () => {
+    addReview(id);
+  });
+  //include add to custom list button
   //include reviews section: avg star rating and worded reviews
 }
 

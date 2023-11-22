@@ -139,17 +139,14 @@ footer {
   margin: 0 auto;
   margin-top: 25px;
 }
-#list #listData .drinkItem p:hover {
-  color: #ad9b9b;
+#list #listData .drinkItem:hover p {
+  color: #e5697e;
 }
 #list #listData .drinkItem p {
   border: none;
   color: #000;
   margin-bottom: 10px;
   font-size: 18px;
-}
-#list #listData .drinkItem p:hover {
-  color: #ad9b9b;
 }
 #list #listData .drinkItem img {
   max-width: 225px;
@@ -233,6 +230,9 @@ footer {
   display: none;
 }
 
+#user {
+  margin-top: 20px;
+}
 #user #userData hr {
   border: 1px solid #000;
   margin: 20px 0;
@@ -242,8 +242,10 @@ footer {
 }
 #user #userData .userSection h2 {
   text-align: center;
-  border-bottom: 1px solid #000;
-  padding-bottom: 7px;
+  border-bottom: 2px solid #000;
+  border-top: 2px solid #000;
+  border-radius: 5px;
+  padding: 8px;
   display: inline-block;
   margin-bottom: 25px;
 }
@@ -266,19 +268,26 @@ footer {
   padding: 20px 5px;
   margin-bottom: 10px;
 }
+#user #userData .userSection #userInfo .userInfoDetail button {
+  cursor: pointer;
+}
 #user #userData .userSection #userInfo .userInfoDetail .editBtnGroup {
   display: flex;
   width: 100%;
 }
-#user #userData .userSection #userInfo .userInfoDetail .editBtnGroup .updateUNameBtn, #user #userData .userSection #userInfo .userInfoDetail .editBtnGroup .cancelUNameEdit {
+#user #userData .userSection #userInfo .userInfoDetail .editBtnGroup #updateUNameBtn,
+#user #userData .userSection #userInfo .userInfoDetail .editBtnGroup #cancelUNameEditBtn,
+#user #userData .userSection #userInfo .userInfoDetail .editBtnGroup #updateEmailBtn,
+#user #userData .userSection #userInfo .userInfoDetail .editBtnGroup #cancelEmailEditBtn,
+#user #userData .userSection #userInfo .userInfoDetail .editBtnGroup #updatePwBtn,
+#user #userData .userSection #userInfo .userInfoDetail .editBtnGroup #cancelPwEditBtn {
   display: none;
 }
 #user #userData .userSection #userFavorites {
   display: flex;
   overflow-x: scroll;
-  scrollbar-color: pink #fff;
+  scrollbar-color: #e5697e #fff;
   scrollbar-width: thin;
-  scroll-behavior: smooth;
 }
 #user #userData .userSection #userFavorites .userDrinkItem {
   display: flex;

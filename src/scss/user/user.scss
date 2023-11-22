@@ -1,4 +1,5 @@
 #user {
+  margin-top: 20px;
   #userData {
     hr {
       border: 1px solid #000;
@@ -10,8 +11,10 @@
 
       h2 {
         text-align: center;
-        border-bottom: 1px solid #000;
-        padding-bottom: 7px;
+        border-bottom: 2px solid #000;
+        border-top: 2px solid #000;
+        border-radius: 5px;
+        padding: 8px;
         display: inline-block;
         margin-bottom: 25px;
       }
@@ -31,16 +34,26 @@
             border: 1px solid #a8a5a5;
             border-radius: 5px;
           }
+
           input {
             padding: 20px 5px;
             margin-bottom: 10px;
+          }
+
+          button {
+            cursor: pointer;
           }
 
           .editBtnGroup {
             display: flex;
             width: 100%;
 
-            .updateUNameBtn, .cancelUNameEdit {
+            #updateUNameBtn,
+            #cancelUNameEditBtn,
+            #updateEmailBtn,
+            #cancelEmailEditBtn,
+            #updatePwBtn,
+            #cancelPwEditBtn {
               display: none;
             }
           }
@@ -50,9 +63,8 @@
       #userFavorites {
         display: flex;
         overflow-x: scroll;
-        scrollbar-color: pink #fff;
+        scrollbar-color: #e5697e #fff;
         scrollbar-width: thin;
-        scroll-behavior: smooth;
 
         .userDrinkItem {
           display: flex;
@@ -64,7 +76,7 @@
           margin-bottom: 30px;
 
           &:hover {
-            p{
+            p {
               color: #e5697e;
             }
           }

@@ -27,8 +27,10 @@
       margin: 0 auto;
       margin-top: 25px;
 
-      p:hover {
-        color: #ad9b9b;
+      &:hover {
+        p{
+          color: #e5697e;
+        }
       }
 
       p {
@@ -36,10 +38,6 @@
         color: #000;
         margin-bottom: 10px;
         font-size: 18px;
-
-        &:hover {
-          color: #ad9b9b;
-        }
       }
 
       img {
