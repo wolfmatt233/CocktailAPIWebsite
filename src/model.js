@@ -386,7 +386,7 @@ function deleteUser() {
   //remove document from firestore
 }
 
-//----------FAVORITES----------\\
+//----------FAVORITES & REVIEWS----------\\
 
 async function addToFavorites(id) {
   //from details view, add a certain item to a user's favorites
@@ -409,74 +409,17 @@ async function addToFavorites(id) {
 
       //if there has been an item added, return, else update the doc
       if (alreadyAdded > 0) {
-        checkIfFavorite(id);
+        checkItemButtons(id);
       } else {
         newFavorite.push(id);
         updateDoc(doc.ref, { favorites: newFavorite })
           .then(() => {
             ToastMessage("success", "Added", "Added to favorites!");
-            checkIfFavorite(id);
+            checkItemButtons(id);
           })
           .catch((error) => {
             ToastMessage("error", "Error", error.message);
           });
-      }
-    }
-  });
-}
-
-async function checkIfFavorite(id) {
-  //from details view, add a certain item to a user's favorites
-  const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
-
-  //for each document
-  querySnapshot.forEach((doc) => {
-    //find the document relating to the current user
-    if (doc.data().userId == globalUser.uid) {
-      let newFavorite = doc.data().favorites; //favorites array
-      let alreadyAdded = 0;
-
-      //for each favorite
-      newFavorite.forEach((item) => {
-        //if current id matches favorite item, increase var by 1
-        if (item == id) {
-          alreadyAdded += 1;
-        }
-      });
-
-      //if there has been an item added display proper button, else display the other button
-      if (alreadyAdded > 0) {
-        $("#addToFavorites").attr("id", "removeFromFavorites");
-        $("#removeFromFavorites").html(
-          `<span class="favorite">Favorited</span><span class="remove">Remove</span>`
-        );
-
-        $("#removeFromFavorites").on("mouseenter", () => {
-          $("#removeFromFavorites").css("background-color", "red");
-          $(".favorite").css("display", "none");
-          $(".remove").css("display", "block");
-        });
-
-        $("#removeFromFavorites").on("mouseleave", () => {
-          $("#removeFromFavorites").css("background-color", "#fff");
-          $(".favorite").css("display", "block");
-          $(".remove").css("display", "none");
-        });
-
-        //listen for button to remove a favorite
-        $("#removeFromFavorites").on("click", () => {
-          removeFromFavorites(id);
-        });
-      } else {
-        $("#removeFromFavorites")
-          .attr("id", "addToFavorites")
-          .html("Add to Favorites")
-          .css("background-color", "");
-
-        //listen for button to remove a favorite
-        $("#removeFromFavorites").on("click", () => {
-          addToFavorites(id);
-        });
       }
     }
   });
@@ -501,7 +444,7 @@ async function removeFromFavorites(id) {
           updateDoc(doc.ref, { favorites: newFavoriteArr })
             .then(() => {
               ToastMessage("success", "Added", "Removed From favorites!");
-              checkIfFavorite(id);
+              checkItemButtons(id);
             })
             .catch((error) => {
               ToastMessage("error", "Error", error.message);
@@ -512,28 +455,214 @@ async function removeFromFavorites(id) {
   });
 }
 
-//----------REVIEWS----------\\
+function reviewModal(id) {
+  //modal for text and score
+  Swal.fire({
+    title: "Add A Review",
+    html: `
+        <select name="starRating" id="starRating" class="swal2-select" placeholder="Email">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+        </select>
+        <input type="textarea" id="reviewText" class="swal2-textarea" placeholder="Password">
+      `,
+    focusConfirm: false,
+    icon: "info",
+    confirmButtonText: "Add Review",
+    showCancelButton: true,
+    cancelButtonText: "Cancel",
+    cancelButtonColor: "#d33",
+    confirmButtonColor: "#3085d6",
+    preConfirm: () => {
+      let ratingInput = $("#starRating").val();
+      let reviewInput = $("#reviewText").val();
+      addEditReview(ratingInput, reviewInput, id);
+    },
+  });
+}
 
-async function addReview(id) {
+async function addEditReview(rating, review, id) {
   //from details view, add a review by the user on a certain item
   const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
-  let userDoc = "";
+  let currentItem = "";
 
   querySnapshot.forEach((doc) => {
     //find the document relating to the current user
     if (doc.data().userId == globalUser.uid) {
-      userDoc = doc;
+      //create new review
+      let newReview = {
+        itemId: id,
+        review: review,
+        starScore: rating,
+        userId: globalUser.uid,
+      };
+
+      let reviewsArr = doc.data().reviews; //get current reviews array
+
+      reviewsArr.forEach((review, idx) => {
+        //if the current review is being edited
+        if (review.itemId == id) {
+          currentItem = review.itemId;
+          reviewsArr[idx] = newReview;
+
+          updateDoc(doc.ref, { reviews: reviewsArr })
+            .then(() => {
+              ToastMessage("success", "Added", "Review Edited!");
+              checkItemButtons(id);
+            })
+            .catch((error) => {
+              ToastMessage("error", "Error", error.message);
+            });
+        }
+      });
+
+      if (currentItem !== id) {
+        reviewsArr.push(newReview);
+
+        updateDoc(doc.ref, { reviews: reviewsArr })
+          .then(() => {
+            ToastMessage("success", "Added", "Review Added!");
+            checkItemButtons(id);
+          })
+          .catch((error) => {
+            ToastMessage("error", "Error", error.message);
+          });
+      }
     }
   });
+}
 
-  //modal for text and score
+async function deleteReview(id) {
+  const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
 
-  // let newReview = {
-  //   itemId: id,
-  //   review: review,
-  //   starScore: starScore,
-  //   userId: globalUser.uid,
-  // };
+  querySnapshot.forEach((doc) => {
+    //find the document relating to the current user
+    if (doc.data().userId == globalUser.uid) {
+      let reviewsArr = doc.data().reviews; //get current reviews array
+
+      reviewsArr.forEach((review, idx) => {
+        //if the current review is being deleted
+        if (review.itemId == id) {
+          reviewsArr.splice(idx, 1);
+          updateDoc(doc.ref, { reviews: reviewsArr })
+            .then(() => {
+              ToastMessage("success", "Deleted", "Review Deleted!");
+              checkItemButtons(id);
+            })
+            .catch((error) => {
+              ToastMessage("error", "Error", error.message);
+            });
+        }
+      });
+    }
+  });
+}
+
+//checks detailed view page on whether to display certain buttons
+async function checkItemButtons(id) {
+  //from details view, add a certain item to a user's favorites
+  const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
+
+  //for each document
+  querySnapshot.forEach((doc) => {
+    //find the document relating to the current user
+    if (doc.data().userId == globalUser.uid) {
+      let newFavorite = doc.data().favorites; //favorites array
+      let alreadyAdded = 0;
+
+      //for each favorite
+      newFavorite.forEach((item) => {
+        //if current id matches favorite item, increase var by 1
+        if (item == id) {
+          alreadyAdded += 1;
+        }
+      });
+
+      //if there has been an item added display proper button, else display the other button
+      if (alreadyAdded > 0) {
+        //show remove button
+        $("#addToFavorites").attr("id", "removeFromFavorites");
+        $("#removeFromFavorites").html(
+          `<span class="favorite">Favorited</span><span class="remove">Remove</span>`
+        );
+
+        //hover visuals for remove button
+        $("#removeFromFavorites").on("mouseenter", () => {
+          $("#removeFromFavorites").css("background-color", "red");
+          $(".favorite").css("display", "none");
+          $(".remove").css("display", "block");
+        });
+
+        //hover visuals for remove button
+        $("#removeFromFavorites").on("mouseleave", () => {
+          $("#removeFromFavorites").css("background-color", "#fff");
+          $(".favorite").css("display", "block");
+          $(".remove").css("display", "none");
+        });
+
+        //listen for button to remove a favorite
+        $("#removeFromFavorites").on("click", () => {
+          removeFromFavorites(id);
+        });
+      } else {
+        //show add to favorites button
+        $("#removeFromFavorites")
+          .attr("id", "addToFavorites")
+          .html("Add to Favorites")
+          .css("background-color", "");
+
+        //listen for button to remove a favorite
+        $("#removeFromFavorites").on("click", () => {
+          addToFavorites(id);
+        });
+      }
+
+      let deleteReviewBtn = $("#deleteReview").val();
+      let noReviewNum = "";
+
+      //if there is already a review, show correct button
+      doc.data().reviews.forEach((review) => {
+        if (review.itemId === id) {
+          //if there is already a review, show edit and delete
+          $("#addReview").attr("id", "editReview");
+          $("#editReview").html("Edit Review");
+
+          //if delete button is already there, do nothing
+          if (deleteReviewBtn == null) {
+            $("#viewData").append(`<button id="deleteReview">Delete</button>`);
+
+            //hover visuals for delete button
+            $("#deleteReview").on("mouseenter", () => {
+              $("#deleteReview").css("background-color", "red");
+            });
+
+            //hover visuals for delete button
+            $("#deleteReview").on("mouseleave", () => {
+              $("#deleteReview").css("background-color", "#fff");
+            });
+
+            //call function on click of button
+            $("#deleteReview").on("click", () => {
+              deleteReview(id);
+            });
+          }
+        } else {
+          //else increase counter
+          noReviewNum++;
+        }
+      });
+
+      //if there is no review, show only add review
+      if (doc.data().reviews.length == noReviewNum) {
+        $("#editReview").attr("id", "addReview");
+        $("#addReview").html("Add Review");
+        $("#deleteReview").remove();
+      }
+    }
+  });
 }
 
 //----------API----------\\
@@ -563,8 +692,8 @@ function index(letter) {
 }
 
 async function view(id) {
-  if(isNaN(id)) {
-    return console.log("different page")
+  if (isNaN(id)) {
+    return console.log("different page");
   }
 
   let byIdUrl = `${baseURL}${lookupURL}${byId}${id}`;
@@ -628,7 +757,7 @@ async function view(id) {
       `<button id="addToFavorites">Add to Favorites</button>`
     );
     $("#viewData").append(`<button id="addReview">Add Review</button>`);
-    checkIfFavorite(id);
+    checkItemButtons(id);
   }
 
   //listen for button to add a favorite
@@ -637,7 +766,7 @@ async function view(id) {
   });
 
   $("#addReview").on("click", () => {
-    addReview(id);
+    reviewModal(id);
   });
   //include add to custom list button
   //include reviews section: avg star rating and worded reviews

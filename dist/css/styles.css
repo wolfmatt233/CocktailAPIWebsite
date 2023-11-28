@@ -217,7 +217,8 @@ footer {
   margin-bottom: 5px;
 }
 #view #viewItem #viewData button {
-  width: 50%;
+  width: 25%;
+  margin-right: 5px;
   border: 1px solid #a8a5a5;
   padding: 10px 5px;
   border-radius: 15px;
