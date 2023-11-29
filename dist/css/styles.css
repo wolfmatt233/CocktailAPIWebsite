@@ -172,6 +172,14 @@ footer {
   color: #000;
 }
 
+#view button {
+  width: 25%;
+  margin-right: 5px;
+  border: 1px solid #a8a5a5;
+  padding: 10px 5px;
+  border-radius: 15px;
+  cursor: pointer;
+}
 #view .siteBtn {
   text-decoration: none;
   color: #000;
@@ -216,19 +224,51 @@ footer {
   margin-left: 25px;
   margin-bottom: 5px;
 }
-#view #viewItem #viewData button {
-  width: 25%;
-  margin-right: 5px;
-  border: 1px solid #a8a5a5;
-  padding: 10px 5px;
-  border-radius: 15px;
+#view #buttonRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+#view #buttonRow #removeFromFavorites {
   cursor: pointer;
 }
-#view #viewItem #viewData #removeFromFavorites {
-  cursor: pointer;
-}
-#view #viewItem #viewData #removeFromFavorites .remove {
+#view #buttonRow #removeFromFavorites .remove {
   display: none;
+}
+#view #viewReviews {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  padding: 25px;
+}
+#view #viewReviews button {
+  width: 100%;
+}
+#view #viewReviews #avgRating {
+  margin-bottom: 25px;
+  border-bottom: 1px solid #000;
+  border-radius: 5px;
+  padding-bottom: 7px;
+  font-size: 20px;
+}
+#view #viewReviews #toggleReviews {
+  display: none;
+}
+#view #viewReviews .reviewItem {
+  margin: 20px 0;
+  border-radius: 10px;
+  width: 100%;
+  padding: 15px;
+  box-shadow: 2px 3px 2px 2px #717070;
+}
+#view #viewReviews .reviewItem h3,
+#view #viewReviews .reviewItem p {
+  margin-bottom: 7px;
+}
+#view #viewReviews hr {
+  width: 100%;
+  border: 1px solid #000;
 }
 
 #user {

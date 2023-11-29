@@ -43,8 +43,8 @@ onAuthStateChanged(auth, (user) => {
     $("#userWrapper p").html(globalUser.displayName);
     $("#userWrapper").attr("href", "#user"); //enable user page routing
 
-    //if page is reloaded, make sure view has its buttons
-    view(window.location.hash.split("_").pop());
+    //if page is reloaded, make sure view has its buttons, aka feed it the id
+    // view(window.location.hash.split("_").pop());
 
     //listen for logout click
     $("#logout").on("click", () => {
@@ -561,13 +561,49 @@ async function deleteReview(id) {
   });
 }
 
+async function showReviews(id) {
+  $("#showReviews").remove();
+  $("#toggleReviews").css("display", "block");
+  const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
+
+  querySnapshot.forEach((doc) => {
+    doc.data().reviews.forEach((review) => {
+      if (review.itemId == id) {
+        $("#viewReviews").append(`
+          <div class="reviewItem">
+            <h3>${doc.data().username}</h3>
+            <p>Rating: ${review.starScore} stars</p>
+            <p>${review.review}</p>
+          </div>
+        `);
+      }
+    });
+  });
+}
+
 //checks detailed view page on whether to display certain buttons
 async function checkItemButtons(id) {
   //from details view, add a certain item to a user's favorites
   const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
+  let numOfRatings = 0;
+  let avgRating = 0;
 
   //for each document
   querySnapshot.forEach((doc) => {
+    //get average rating
+    doc.data().reviews.forEach((review) => {
+      if (review.itemId == id) {
+        avgRating = avgRating + review.starScore;
+        numOfRatings++;
+      }
+    });
+
+    avgRating = avgRating / numOfRatings;
+
+    $("#avgRating").html(
+      `Average Rating of <b>${avgRating}</b> stars based on <b>${numOfRatings}</b> review(s).`
+    );
+
     //find the document relating to the current user
     if (doc.data().userId == globalUser.uid) {
       let newFavorite = doc.data().favorites; //favorites array
@@ -620,7 +656,6 @@ async function checkItemButtons(id) {
         });
       }
 
-      let deleteReviewBtn = $("#deleteReview").val();
       let noReviewNum = "";
 
       //if there is already a review, show correct button
@@ -631,8 +666,10 @@ async function checkItemButtons(id) {
           $("#editReview").html("Edit Review");
 
           //if delete button is already there, do nothing
-          if (deleteReviewBtn == null) {
-            $("#viewData").append(`<button id="deleteReview">Delete</button>`);
+          if ($("#deleteReview").val() == null) {
+            $("#buttonRow").append(
+              `<button id="deleteReview">Delete Review</button>`
+            );
 
             //hover visuals for delete button
             $("#deleteReview").on("mouseenter", () => {
@@ -698,9 +735,12 @@ async function view(id) {
 
   let byIdUrl = `${baseURL}${lookupURL}${byId}${id}`;
 
+  //get api information for item
   $.getJSON(byIdUrl, (data) => {
     data = data.drinks[0];
     let instructions = data.strInstructions.split(".");
+
+    $("#name, #extraInfo, #instructions, #ingredients").html("");
 
     $("#viewImg").attr("src", `${data.strDrinkThumb}`);
     $("#name").append(`${data.strDrink}`);
@@ -751,16 +791,46 @@ async function view(id) {
     }
   });
 
-  //show favorite and review buttons
+  //get review average to display
+  const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
+  let numOfRatings = 0;
+  let avgRating = 0;
+
+  //get average rating
+  querySnapshot.forEach((doc) => {
+    doc.data().reviews.forEach((review) => {
+      if (review.itemId == id) {
+        avgRating = avgRating + review.starScore;
+        numOfRatings++;
+      }
+    });
+  });
+
+  avgRating = avgRating / numOfRatings;
+
+  $("#avgRating").html(
+    `Average Rating of <b>${avgRating}</b> stars based on <b>${numOfRatings}</b> review(s).`
+  );
+
+  //----APPEND USER BUTTONS----\\
   if (globalUser) {
-    $("#viewData").append(
-      `<button id="addToFavorites">Add to Favorites</button>`
-    );
-    $("#viewData").append(`<button id="addReview">Add Review</button>`);
+    //prevent duplication of button on reload of page
+    if ($("#addToFavorites").val() == null) {
+      $("#buttonRow").append(
+        `<button id="addToFavorites">Add to Favorites</button>`
+      );
+    }
+
+    //prevent duplication of button on reload of page
+    if ($("#addReview").val() == null) {
+      $("#buttonRow").append(`<button id="addReview">Add Review</button>`);
+    }
+
     checkItemButtons(id);
   }
 
-  //listen for button to add a favorite
+  //----DETAIL PAGE BUTTON LISTENERS----\\
+
   $("#addToFavorites").on("click", () => {
     addToFavorites(id);
   });
@@ -768,8 +838,24 @@ async function view(id) {
   $("#addReview").on("click", () => {
     reviewModal(id);
   });
+
+  $("#showReviews").on("click", () => {
+    showReviews(id);
+  });
+
+  $("#toggleReviews").on("click", () => {
+    if ($("#toggleReviews").text() == "Hide Reviews") {
+      //hide reviews
+      $(".reviewItem").css("display", "none");
+      $("#toggleReviews").html("Show Reviews");
+    } else if ($("#toggleReviews").text() == "Show Reviews") {
+      //show reviews again
+      $(".reviewItem").css("display", "block");
+      $("#toggleReviews").html("Hide Reviews");
+    }
+  });
+
   //include add to custom list button
-  //include reviews section: avg star rating and worded reviews
 }
 
 export function search() {
