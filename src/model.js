@@ -5,6 +5,7 @@ import {
   onAuthStateChanged,
   updateProfile,
   updatePassword,
+  deleteUser,
 } from "firebase/auth";
 import {
   getDoc,
@@ -378,7 +379,7 @@ async function viewUser() {
   });
 
   $("#deleteAccount").on("click", () => {
-    deleteUser();
+    deleteCurrentUser();
   });
 }
 
@@ -435,15 +436,14 @@ async function updateUser(type, value) {
   }
 }
 
-async function deleteUser() {
+async function deleteCurrentUser() {
   //remove document from firestore
   const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
 
   querySnapshot.forEach((doc) => {
-    
     //get doc relating to the current user
     if (doc.data().userId == globalUser.uid) {
-      deleteUser(user) //delete user
+      deleteUser(auth.currentUser) //delete user
         .then(() => {
           deleteDoc(doc.ref) //delete document
             .then(() => {
