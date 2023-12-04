@@ -15,10 +15,12 @@ import {
   where,
   query,
   updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { auth } from "./credentials";
 import { db } from "./credentials";
 import Swal from "sweetalert2";
+import * as d3 from "d3";
 
 var globalUser = null; //application wide variable to check user status
 
@@ -48,10 +50,10 @@ onAuthStateChanged(auth, (user) => {
 
     //listen for logout click
     $("#logout").on("click", () => {
-      logoutUser(auth);
+      logoutUser();
     });
 
-    viewUser();
+    // viewUser();
     console.log("Signed in.");
   } else {
     //----SIGNED OUT----\\
@@ -255,7 +257,7 @@ function loginUser(email, password) {
     });
 }
 
-function logoutUser(auth) {
+function logoutUser() {
   signOut(auth)
     .then(() => {
       globalUser = null;
@@ -270,6 +272,7 @@ function logoutUser(auth) {
 async function viewUser() {
   //get all documents from the database aka collection
   const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
+  let favoritesArr = [];
 
   querySnapshot.forEach((doc) => {
     doc = doc.data();
@@ -280,20 +283,66 @@ async function viewUser() {
       $("#editEmail").attr("placeholder", doc.email);
 
       //get favorites array
-      // doc.favorites.forEach((id) => {
-      //   let byIdUrl = `${baseURL}${lookupURL}${byId}${id}`;
+      doc.favorites.forEach((id) => {
+        let byIdUrl = `${baseURL}${lookupURL}${byId}${id}`;
 
-      //   $.getJSON(byIdUrl, (data) => {
-      //     data = data.drinks[0];
-      //     $("#userFavorites").append(`
-      //           <a href="#view_${data.idDrink}" class="userDrinkItem">
-      //             <p>${data.strDrink}</p>
-      //             <img src="${data.strDrinkThumb}" alt="DrinkImg">
-      //           </a>
-      //         `);
-      //   });
-      // });
-      //show stats from favorites
+        $.getJSON(byIdUrl, (data) => {
+          data = data.drinks[0];
+          getDataFromAsync(data);
+          $("#userFavorites").append(`
+                <a href="#view_${data.idDrink}" class="userDrinkItem">
+                  <p>${data.strDrink}</p>
+                  <img src="${data.strDrinkThumb}" alt="DrinkImg">
+                </a>
+              `);
+        });
+      });
+
+      function getDataFromAsync(data) {
+        favoritesArr.push(data);
+        if (favoritesArr.length == doc.favorites.length) {
+          getGraphs(favoritesArr);
+        }
+      }
+
+      function getGraphs(favoritesArr) {
+        let categories = [];
+        let alcoholic = [];
+        let alcNum = 0;
+        let nonAlcNum = 0;
+        let glasses = [];
+        let ingredients = [];
+
+        //get data for each statistic
+        favoritesArr.forEach((item) => {
+          categories.push(item.strCategory); //pie chart for categories
+          alcoholic.push(item.strAlcoholic); //pie chart for alcohilic or non
+          glasses.push(item.strGlass); //
+
+          for (const prop in item) {
+            let nums = [];
+            for (var i = 1; i <= 15; i++) {
+              nums.push(i);
+            }
+
+            nums.forEach((num) => {
+              let ingredient = "strIngredient" + num;
+
+              if (prop == ingredient && item[prop] !== null) {
+                ingredients.push(item[prop]);
+              }
+            });
+          }
+        });
+
+        alcoholic.forEach((item) => {
+          if (item == "alcoholic") {
+            alcNum += 1;
+          } else if (item == "Non alcoholic") {
+            nonAlcNum += 1;
+          }
+        });
+      }
     }
   });
 
@@ -326,6 +375,10 @@ async function viewUser() {
     let btnType = e.target.id.replace("edit", "");
     btnType = btnType.replace("Btn", "");
     editButtons(btnType);
+  });
+
+  $("#deleteAccount").on("click", () => {
+    deleteUser();
   });
 }
 
@@ -382,8 +435,36 @@ async function updateUser(type, value) {
   }
 }
 
-function deleteUser() {
+async function deleteUser() {
   //remove document from firestore
+  const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
+
+  querySnapshot.forEach((doc) => {
+    
+    //get doc relating to the current user
+    if (doc.data().userId == globalUser.uid) {
+      deleteUser(user) //delete user
+        .then(() => {
+          deleteDoc(doc.ref) //delete document
+            .then(() => {
+              logoutUser(); //log out
+              ToastMessage(
+                "success",
+                "Success",
+                "Deleted account successfully!"
+              );
+              globalUser = null;
+              window.location.hash = "#home";
+            })
+            .catch((error) => {
+              ToastMessage("error", "Error deleting account!", error.message);
+            });
+        })
+        .catch((error) => {
+          ToastMessage("error", "Error deleting account!", error.message);
+        });
+    }
+  });
 }
 
 //----------FAVORITES & REVIEWS----------\\

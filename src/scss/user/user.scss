@@ -1,5 +1,6 @@
 #user {
   margin-top: 20px;
+
   #userData {
     hr {
       border: 1px solid #000;
@@ -95,6 +96,13 @@
           }
         }
       }
+    }
+    button {
+      width: 100%;
+      height: 30px;
+      border: 1px solid #a8a5a5;
+      border-radius: 5px;
+      cursor: pointer;
     }
   }
 }
