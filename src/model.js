@@ -231,7 +231,6 @@ async function createUser(uName, email, pw) {
         email: email,
         favorites: [],
         reviews: [],
-        lists: [],
         userId: userCredentials.user.uid,
         username: uName,
       };
