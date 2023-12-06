@@ -1,5 +1,4 @@
 nav {
-  @include hoverAnim;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -32,13 +31,14 @@ nav {
     display: flex;
     align-items: center;
     justify-content: space-evenly;
+    width: 300px;
+    margin: 0 10px;
 
     input {
       height: 35px;
-      width: 300px;
+      width: 100%;
       padding-left: 5px;
       border: 1px solid #e6e1e1;
-      // border-right: none;
       border-radius: 5px 0 0 5px;
     }
 

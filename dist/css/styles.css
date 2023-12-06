@@ -23,17 +23,6 @@ nav {
   height: 80px;
   background-color: #ffffff;
 }
-@keyframes hover {
-  0% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
 nav a {
   text-decoration: none;
   color: #000;
@@ -56,10 +45,12 @@ nav .searchInput {
   display: flex;
   align-items: center;
   justify-content: space-evenly;
+  width: 300px;
+  margin: 0 10px;
 }
 nav .searchInput input {
   height: 35px;
-  width: 300px;
+  width: 100%;
   padding-left: 5px;
   border: 1px solid #e6e1e1;
   border-radius: 5px 0 0 5px;
@@ -271,12 +262,30 @@ footer {
   border: 1px solid #000;
 }
 
+#reviewText {
+  width: 70%;
+  margin-top: 30px;
+}
+
 #user {
   margin-top: 20px;
 }
 #user #userData hr {
   border: 1px solid #000;
   margin: 20px 0;
+}
+#user #userData button {
+  width: 100%;
+  height: 30px;
+  border: 1px solid #a8a5a5;
+  border-radius: 5px;
+  cursor: pointer;
+}
+#user #userData #deleteAccount {
+  margin: 30px 0;
+}
+#user #userData #deleteAccount:hover {
+  background-color: rgb(213, 105, 105);
 }
 #user #userData .userSection {
   text-align: center;
@@ -289,6 +298,15 @@ footer {
   padding: 8px;
   display: inline-block;
   margin-bottom: 25px;
+}
+#user #userData .userSection #alcoholicOrNo {
+  font-size: 21px;
+  text-align: center;
+  margin: 30px 0;
+}
+#user #userData .userSection #categoryChart,
+#user #userData .userSection #ingredientChart {
+  margin: 50px 0;
 }
 #user #userData .userSection #userInfo {
   display: flex;
@@ -353,12 +371,13 @@ footer {
   border-radius: 0 15px 0 15px;
   box-shadow: 3px 6px 6px #717070;
 }
-#user #userData button {
-  width: 100%;
-  height: 30px;
-  border: 1px solid #a8a5a5;
-  border-radius: 5px;
-  cursor: pointer;
+
+#email, #password, #username {
+  border: 1px solid #c0b7b7;
+}
+#email::placeholder, #password::placeholder, #username::placeholder {
+  opacity: 1 !important;
+  color: #c0b7b7;
 }
 
 /*# sourceMappingURL=styles.css.map */

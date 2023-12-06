@@ -7,6 +7,22 @@
       margin: 20px 0;
     }
 
+    button {
+      width: 100%;
+      height: 30px;
+      border: 1px solid #a8a5a5;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #deleteAccount {
+      margin: 30px 0;
+
+      &:hover {
+        background-color: rgb(213, 105, 105);
+      }
+    }
+
     .userSection {
       text-align: center;
 
@@ -18,6 +34,17 @@
         padding: 8px;
         display: inline-block;
         margin-bottom: 25px;
+      }
+
+      #alcoholicOrNo {
+        font-size: 21px;
+        text-align: center;
+        margin: 30px 0;
+      }
+
+      #categoryChart,
+      #ingredientChart {
+        margin: 50px 0;
       }
 
       #userInfo {
@@ -97,12 +124,15 @@
         }
       }
     }
-    button {
-      width: 100%;
-      height: 30px;
-      border: 1px solid #a8a5a5;
-      border-radius: 5px;
-      cursor: pointer;
-    }
+  }
+}
+
+//modal inputs
+#email, #password, #username {
+  border: 1px solid #c0b7b7;
+
+  &::placeholder {
+    opacity: 1 !important;
+    color: #c0b7b7;
   }
 }

@@ -21,7 +21,6 @@ import {
 import { auth } from "./credentials";
 import { db } from "./credentials";
 import Swal from "sweetalert2";
-import * as d3 from "d3";
 
 var globalUser = null; //application wide variable to check user status
 
@@ -118,6 +117,10 @@ export function changeRoute() {
       pagination(pageLetterID);
       break;
     case "view":
+      if (isNaN(itemID) == true) {
+        return (window.location.hash = "#home");
+      }
+
       $.get(`pages/view.html`, (data) => {
         $("#app").html(data);
         view(itemID);
@@ -130,19 +133,14 @@ export function changeRoute() {
       });
       break;
     case "user":
+      if (!globalUser) {
+        return (window.location.hash = "#home");
+      }
+
       $.get(`pages/user.html`, (data) => {
         $("#app").html(data);
         viewUser();
       });
-      break;
-    case "lists":
-      //custom lists from user
-      break;
-    case "favorites":
-      //personal favorites
-      break;
-    case "reviews":
-      //reviews on a certain item
       break;
   }
 }
@@ -212,7 +210,15 @@ function userModal() {
   });
 }
 
-function createUser(uName, email, pw) {
+async function createUser(uName, email, pw) {
+  const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
+
+  querySnapshot.forEach((doc) => {
+    if (doc.data().email == email) {
+      return ToastMessage("error", "Sign Up Error", "Email already in use.");
+    }
+  });
+
   createUserWithEmailAndPassword(auth, email, pw)
     .then((userCredentials) => {
       //created profile: username, email, pw
@@ -240,6 +246,7 @@ function createUser(uName, email, pw) {
 async function addUser(newUser) {
   try {
     await addDoc(collection(db, "CocktailDBUsers"), newUser).then(() => {
+      $("#userWrapper p").html(newUser.username);
       ToastMessage("success", "Success", "Account created successfully!");
     });
   } catch (e) {
@@ -307,18 +314,28 @@ async function viewUser() {
       }
 
       function getGraphs(favoritesArr) {
-        let categories = [];
+        //alcoholic vs. non
         let alcoholic = [];
         let alcNum = 0;
         let nonAlcNum = 0;
-        let glasses = [];
-        let ingredients = [];
+
+        //categories
+        let categories = []; //all categories, including duplicates
+        let uniqueCategories = []; //unique categories
+        let categoryData = []; //true numbers, match unique indexes
+        let catColors = []; //colors for the chart
+
+        //ingredients
+        let ingredients = []; //base ingredients
+        let cleanIngredients = []; //lowercase all ingredients to prevent case sensetive duplication
+        let uniqueIngredients = []; //remove duplicates
+        let ingredientData = []; //actual numbers for amount for each ingredient
+        let ingredientColors = []; //colors for chart
 
         //get data for each statistic
         favoritesArr.forEach((item) => {
           categories.push(item.strCategory); //pie chart for categories
           alcoholic.push(item.strAlcoholic); //pie chart for alcohilic or non
-          glasses.push(item.strGlass); //
 
           for (const prop in item) {
             let nums = [];
@@ -336,12 +353,130 @@ async function viewUser() {
           }
         });
 
+        //# of alcoholic vs # of non alcoholic drinks
         alcoholic.forEach((item) => {
+          item = item.toLowerCase();
           if (item == "alcoholic") {
             alcNum += 1;
-          } else if (item == "Non alcoholic") {
+          } else if (item == "non alcoholic") {
             nonAlcNum += 1;
           }
+        });
+
+        $("#alcoholicOrNo").html(`
+          # of Alcoholic Drinks: <b>${alcNum}</b> vs. # of Non-Alcoholic Drinks: <b>${nonAlcNum}</b>
+        `);
+
+        //CATEGORIES PIE CHART
+
+        //get unique categories array
+        uniqueCategories = categories.filter(
+          (item, i, ar) => ar.indexOf(item) === i
+        );
+
+        //for however long the categories array is, set its index value to 0 to start
+        for (let i = 0; i < uniqueCategories.length; i++) {
+          categoryData[i] = 0;
+        }
+
+        //for each category, if it matches a unique one, increase that index value by one
+        categories.forEach((item) => {
+          for (let i = 0; i < uniqueCategories.length; i++) {
+            if (item == uniqueCategories[i]) {
+              categoryData[i] += 1;
+            }
+          }
+        });
+
+        //get random colors for the amount of items
+        uniqueCategories.forEach((item) => {
+          catColors.push(
+            "#" +
+              ((Math.random() * 0xffffff) << 0).toString(16).padStart(6, "0")
+          );
+        });
+
+        new Chart("categoryChart", {
+          type: "doughnut",
+          data: {
+            labels: uniqueCategories,
+            datasets: [
+              {
+                backgroundColor: catColors,
+                data: categoryData,
+              },
+            ],
+          },
+          options: {
+            title: {
+              display: true,
+              text: "Categories",
+            },
+          },
+        });
+
+        //INGREDIENTS BAR CHART
+
+        ingredients.forEach((item) => {
+          cleanIngredients.push(item.toLowerCase());
+        });
+
+        //remove duplicates
+        uniqueIngredients = cleanIngredients.filter(
+          (item, i, ar) => ar.indexOf(item) === i
+        );
+
+        //for each ingredient, set index to 0
+        for (let i = 0; i < uniqueIngredients.length; i++) {
+          ingredientData[i] = 0;
+        }
+
+        //add 1 to each counter if the items match between unique and clean
+        cleanIngredients.forEach((item) => {
+          for (let i = 0; i < uniqueIngredients.length; i++) {
+            if (item == uniqueIngredients[i]) {
+              ingredientData[i] += 1;
+            }
+          }
+        });
+
+        //get a random color for however many unique ingredients there are
+        uniqueIngredients.forEach((item) => {
+          ingredientColors.push(
+            "#" +
+              ((Math.random() * 0xffffff) << 0).toString(16).padStart(6, "0")
+          );
+        });
+
+        new Chart("ingredientChart", {
+          type: "bar",
+          data: {
+            labels: uniqueIngredients,
+            datasets: [
+              {
+                backgroundColor: ingredientColors,
+                data: ingredientData,
+              },
+            ],
+          },
+          options: {
+            title: {
+              display: true,
+              text: "Your Favorite Ingredients",
+            },
+            legend: {
+              display: false,
+            },
+            scales: {
+              yAxes: [
+                {
+                  ticks: {
+                    beginAtZero: true,
+                  },
+                },
+              ],
+            },
+          },
         });
       }
     }
@@ -379,7 +514,19 @@ async function viewUser() {
   });
 
   $("#deleteAccount").on("click", () => {
-    deleteCurrentUser();
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You are deleting your account!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteCurrentUser();
+      }
+    });
   });
 }
 
@@ -541,14 +688,14 @@ function reviewModal(id) {
   Swal.fire({
     title: "Add A Review",
     html: `
-        <select name="starRating" id="starRating" class="swal2-select" placeholder="Email">
+        <select name="starRating" id="starRating" class="swal2-select">
           <option value="1">1</option>
           <option value="2">2</option>
           <option value="3">3</option>
           <option value="4">4</option>
           <option value="5">5</option>
         </select>
-        <input type="textarea" id="reviewText" class="swal2-textarea" placeholder="Password">
+        <input type="textarea" id="reviewText" class="swal2-textarea" placeholder="Add review...">
       `,
     focusConfirm: false,
     icon: "info",
@@ -577,7 +724,7 @@ async function addEditReview(rating, review, id) {
       let newReview = {
         itemId: id,
         review: review,
-        starScore: rating,
+        starScore: Number(rating),
         userId: globalUser.uid,
       };
 
@@ -674,16 +821,10 @@ async function checkItemButtons(id) {
     //get average rating
     doc.data().reviews.forEach((review) => {
       if (review.itemId == id) {
-        avgRating = avgRating + review.starScore;
         numOfRatings++;
+        avgRating += Number(review.starScore);
       }
     });
-
-    avgRating = avgRating / numOfRatings;
-
-    $("#avgRating").html(
-      `Average Rating of <b>${avgRating}</b> stars based on <b>${numOfRatings}</b> review(s).`
-    );
 
     //find the document relating to the current user
     if (doc.data().userId == globalUser.uid) {
@@ -781,6 +922,12 @@ async function checkItemButtons(id) {
       }
     }
   });
+
+  avgRating = avgRating / numOfRatings;
+
+  $("#avgRating").html(
+    `Average rating of <b>${avgRating}</b> stars based on <b>${numOfRatings}</b> review(s).`
+  );
 }
 
 //----------API----------\\
@@ -792,14 +939,18 @@ function index(letter) {
   $.getJSON(byLetterURL, (data) => {
     data = data.drinks;
 
-    data.forEach((drink) => {
-      $("#listData").append(`
-        <a href="#view_${drink.idDrink}" class="drinkItem">
-            <p>${drink.strDrink}</p>
-            <img src="${drink.strDrinkThumb}" alt="DrinkImg">
-        </a>
-      `);
-    });
+    if (data == null) {
+      $("#listData").append(`No results`);
+    } else {
+      data.forEach((drink) => {
+        $("#listData").append(`
+          <a href="#view_${drink.idDrink}" class="drinkItem">
+              <p>${drink.strDrink}</p>
+              <img src="${drink.strDrinkThumb}" alt="DrinkImg">
+          </a>
+        `);
+      });
+    }
   });
 
   $("#list").append(`<div class="letterPagination"></div>`);
@@ -812,135 +963,140 @@ function index(letter) {
 async function view(id) {
   if (isNaN(id)) {
     return console.log("different page");
-  }
+  } else {
+    let byIdUrl = `${baseURL}${lookupURL}${byId}${id}`;
 
-  let byIdUrl = `${baseURL}${lookupURL}${byId}${id}`;
+    //get api information for item
+    $.getJSON(byIdUrl, (data) => {
+      data = data.drinks[0];
+      let instructions = data.strInstructions.split(".");
 
-  //get api information for item
-  $.getJSON(byIdUrl, (data) => {
-    data = data.drinks[0];
-    let instructions = data.strInstructions.split(".");
+      $("#name, #extraInfo, #instructions, #ingredients").html("");
 
-    $("#name, #extraInfo, #instructions, #ingredients").html("");
+      $("#viewImg").attr("src", `${data.strDrinkThumb}`);
+      $("#name").append(`${data.strDrink}`);
+      $("#extraInfo").append(`<li>${data.strAlcoholic}</li>`);
+      $("#extraInfo").append(`<li>${data.strCategory}</li>`);
+      $("#extraInfo").append(`<li>Use with a ${data.strGlass}</li>`);
 
-    $("#viewImg").attr("src", `${data.strDrinkThumb}`);
-    $("#name").append(`${data.strDrink}`);
-    $("#extraInfo").append(`<li>${data.strAlcoholic}</li>`);
-    $("#extraInfo").append(`<li>${data.strCategory}</li>`);
-    $("#extraInfo").append(`<li>Use with a ${data.strGlass}</li>`);
+      //get instructions
+      instructions.forEach((sentence) => {
+        if (sentence == "") {
+          return;
+        }
+        $("#instructions").append(`<li>${sentence}.</li>`);
+      });
 
-    //get instructions
-    instructions.forEach((sentence) => {
-      if (sentence == "") {
-        return;
+      //get ingredients
+      for (const prop in data) {
+        let nums = [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+        ];
+
+        nums.forEach((num) => {
+          let ingredient = "strIngredient" + num;
+          let measure = "strMeasure" + num;
+
+          if (prop == ingredient && data[prop] !== null) {
+            $("#ingredients").append(`<li id="${num}">${data[prop]}</li>`);
+          }
+
+          if (prop == measure && data[prop] !== null) {
+            $(`#ingredients li#${num}`).prepend(`${data[prop]}`);
+          }
+        });
       }
-      $("#instructions").append(`<li>${sentence}.</li>`);
     });
 
-    //get ingredients
-    for (const prop in data) {
-      let nums = [
-        "1",
-        "2",
-        "3",
-        "4",
-        "5",
-        "6",
-        "7",
-        "8",
-        "9",
-        "10",
-        "11",
-        "12",
-        "13",
-        "14",
-        "15",
-      ];
+    const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
+    let numOfRatings = 0;
+    let avgRating = 0;
 
-      nums.forEach((num) => {
-        let ingredient = "strIngredient" + num;
-        let measure = "strMeasure" + num;
-
-        if (prop == ingredient && data[prop] !== null) {
-          $("#ingredients").append(`<li id="${num}">${data[prop]}</li>`);
-        }
-
-        if (prop == measure && data[prop] !== null) {
-          $(`#ingredients li#${num}`).prepend(`${data[prop]}`);
+    //get average rating
+    querySnapshot.forEach((doc) => {
+      doc.data().reviews.forEach((review) => {
+        if (review.itemId == id) {
+          numOfRatings++;
+          avgRating += Number(review.starScore);
         }
       });
+    });
+
+    avgRating = avgRating / numOfRatings;
+
+    $("#avgRating").html(
+      `Average rating of <b>${avgRating}</b> stars based on <b>${numOfRatings}</b> review(s).`
+    );
+
+    //----APPEND USER BUTTONS----\\
+
+    if (globalUser) {
+      //prevent duplication of button on reload of page
+      if ($("#addToFavorites").val() == null) {
+        $("#buttonRow").append(
+          `<button id="addToFavorites">Add to Favorites</button>`
+        );
+      }
+
+      //prevent duplication of button on reload of page
+      if ($("#addReview").val() == null) {
+        $("#buttonRow").append(`<button id="addReview">Add Review</button>`);
+      }
+
+      checkItemButtons(id);
     }
-  });
 
-  //get review average to display
-  const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
-  let numOfRatings = 0;
-  let avgRating = 0;
+    //----DETAIL PAGE BUTTON LISTENERS----\\
 
-  //get average rating
-  querySnapshot.forEach((doc) => {
-    doc.data().reviews.forEach((review) => {
-      if (review.itemId == id) {
-        avgRating = avgRating + review.starScore;
-        numOfRatings++;
+    $("#addToFavorites").on("click", () => {
+      addToFavorites(id);
+    });
+
+    $("#addReview").on("click", () => {
+      reviewModal(id);
+    });
+
+    $("#showReviews").on("click", () => {
+      showReviews(id);
+    });
+
+    $("#toggleReviews").on("click", () => {
+      if ($("#toggleReviews").text() == "Hide Reviews") {
+        //hide reviews
+        $(".reviewItem").css("display", "none");
+        $("#toggleReviews").html("Show Reviews");
+      } else if ($("#toggleReviews").text() == "Show Reviews") {
+        //show reviews again
+        $(".reviewItem").css("display", "block");
+        $("#toggleReviews").html("Hide Reviews");
       }
     });
-  });
-
-  avgRating = avgRating / numOfRatings;
-
-  $("#avgRating").html(
-    `Average Rating of <b>${avgRating}</b> stars based on <b>${numOfRatings}</b> review(s).`
-  );
-
-  //----APPEND USER BUTTONS----\\
-  if (globalUser) {
-    //prevent duplication of button on reload of page
-    if ($("#addToFavorites").val() == null) {
-      $("#buttonRow").append(
-        `<button id="addToFavorites">Add to Favorites</button>`
-      );
-    }
-
-    //prevent duplication of button on reload of page
-    if ($("#addReview").val() == null) {
-      $("#buttonRow").append(`<button id="addReview">Add Review</button>`);
-    }
-
-    checkItemButtons(id);
   }
-
-  //----DETAIL PAGE BUTTON LISTENERS----\\
-
-  $("#addToFavorites").on("click", () => {
-    addToFavorites(id);
-  });
-
-  $("#addReview").on("click", () => {
-    reviewModal(id);
-  });
-
-  $("#showReviews").on("click", () => {
-    showReviews(id);
-  });
-
-  $("#toggleReviews").on("click", () => {
-    if ($("#toggleReviews").text() == "Hide Reviews") {
-      //hide reviews
-      $(".reviewItem").css("display", "none");
-      $("#toggleReviews").html("Show Reviews");
-    } else if ($("#toggleReviews").text() == "Show Reviews") {
-      //show reviews again
-      $(".reviewItem").css("display", "block");
-      $("#toggleReviews").html("Hide Reviews");
-    }
-  });
-
-  //include add to custom list button
 }
 
 export function search() {
   let term = $("#searchBtn").val();
+
+  if (term === "") {
+    $("#listData").html(`No results.`);
+    $("h1").append(`"`);
+    return;
+  }
+
   let byNameUrl = `${baseURL}${searchURL}${byName}${term}`;
   $("h1").append(`${term}"`);
 
