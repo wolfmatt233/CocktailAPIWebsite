@@ -1,4 +1,4 @@
-# Cocktail Project
+# Cocktail API Website
 
 Authors: Matthew Wolf, IUPUI, N423 Fall 2023
 
