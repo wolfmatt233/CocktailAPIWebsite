@@ -922,7 +922,12 @@ async function checkItemButtons(id) {
     }
   });
 
-  avgRating = avgRating / numOfRatings;
+  avgRating /= numOfRatings;
+  avgRating = Math.round(avgRating * 100) / 100;
+
+  if (isNaN(avgRating)) {
+    avgRating = "0";
+  }
 
   $("#avgRating").html(
     `Average rating of <b>${avgRating}</b> stars based on <b>${numOfRatings}</b> review(s).`
@@ -960,131 +965,132 @@ function index(letter) {
 }
 
 async function view(id) {
-  if (isNaN(id)) {
-    return console.log("different page");
-  } else {
-    let byIdUrl = `${baseURL}${lookupURL}${byId}${id}`;
+  let byIdUrl = `${baseURL}${lookupURL}${byId}${id}`;
 
-    //get api information for item
-    $.getJSON(byIdUrl, (data) => {
-      data = data.drinks[0];
-      let instructions = data.strInstructions.split(".");
+  //get api information for item
+  $.getJSON(byIdUrl, (data) => {
+    data = data.drinks[0];
+    let instructions = data.strInstructions.split(".");
 
-      $("#name, #extraInfo, #instructions, #ingredients").html("");
+    $("#name, #extraInfo, #instructions, #ingredients").html("");
 
-      $("#viewImg").attr("src", `${data.strDrinkThumb}`);
-      $("#name").append(`${data.strDrink}`);
-      $("#extraInfo").append(`<li>${data.strAlcoholic}</li>`);
-      $("#extraInfo").append(`<li>${data.strCategory}</li>`);
-      $("#extraInfo").append(`<li>Use with a ${data.strGlass}</li>`);
+    $("#viewImg").attr("src", `${data.strDrinkThumb}`);
+    $("#name").append(`${data.strDrink}`);
+    $("#extraInfo").append(`<li>${data.strAlcoholic}</li>`);
+    $("#extraInfo").append(`<li>${data.strCategory}</li>`);
+    $("#extraInfo").append(`<li>Use with a ${data.strGlass}</li>`);
 
-      //get instructions
-      instructions.forEach((sentence) => {
-        if (sentence == "") {
-          return;
-        }
-        $("#instructions").append(`<li>${sentence}.</li>`);
-      });
-
-      //get ingredients
-      for (const prop in data) {
-        let nums = [
-          "1",
-          "2",
-          "3",
-          "4",
-          "5",
-          "6",
-          "7",
-          "8",
-          "9",
-          "10",
-          "11",
-          "12",
-          "13",
-          "14",
-          "15",
-        ];
-
-        nums.forEach((num) => {
-          let ingredient = "strIngredient" + num;
-          let measure = "strMeasure" + num;
-
-          if (prop == ingredient && data[prop] !== null) {
-            $("#ingredients").append(`<li id="${num}">${data[prop]}</li>`);
-          }
-
-          if (prop == measure && data[prop] !== null) {
-            $(`#ingredients li#${num}`).prepend(`${data[prop]}`);
-          }
-        });
+    //get instructions
+    instructions.forEach((sentence) => {
+      if (sentence == "") {
+        return;
       }
+      $("#instructions").append(`<li>${sentence}.</li>`);
     });
 
-    const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
-    let numOfRatings = 0;
-    let avgRating = 0;
+    //get ingredients
+    for (const prop in data) {
+      let nums = [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+      ];
 
-    //get average rating
-    querySnapshot.forEach((doc) => {
-      doc.data().reviews.forEach((review) => {
-        if (review.itemId == id) {
-          numOfRatings++;
-          avgRating += Number(review.starScore);
+      nums.forEach((num) => {
+        let ingredient = "strIngredient" + num;
+        let measure = "strMeasure" + num;
+
+        if (prop == ingredient && data[prop] !== null) {
+          $("#ingredients").append(`<li id="${num}">${data[prop]}</li>`);
+        }
+
+        if (prop == measure && data[prop] !== null) {
+          $(`#ingredients li#${num}`).prepend(`${data[prop]}`);
         }
       });
+    }
+  });
+
+  const querySnapshot = await getDocs(collection(db, "CocktailDBUsers"));
+  let numOfRatings = 0;
+  let avgRating = 0;
+
+  //get average rating
+  querySnapshot.forEach((doc) => {
+    doc.data().reviews.forEach((review) => {
+      if (review.itemId == id) {
+        numOfRatings++;
+        avgRating += review.starScore;
+      }
     });
+  });
 
-    avgRating = avgRating / numOfRatings;
+  avgRating /= numOfRatings;
+  avgRating = Math.round(avgRating * 100) / 100;
 
-    $("#avgRating").html(
-      `Average rating of <b>${avgRating}</b> stars based on <b>${numOfRatings}</b> review(s).`
-    );
+  if (isNaN(avgRating)) {
+    avgRating = "0";
+  }
 
-    //----APPEND USER BUTTONS----\\
+  $("#avgRating").html(
+    `Average rating of <b>${avgRating}</b> stars based on <b>${numOfRatings}</b> review(s).`
+  );
 
-    if (globalUser) {
-      //prevent duplication of button on reload of page
-      if ($("#addToFavorites").val() == null) {
-        $("#buttonRow").append(
-          `<button id="addToFavorites">Add to Favorites</button>`
-        );
-      }
+  //----APPEND USER BUTTONS----\\
 
-      //prevent duplication of button on reload of page
-      if ($("#addReview").val() == null) {
-        $("#buttonRow").append(`<button id="addReview">Add Review</button>`);
-      }
-
-      checkItemButtons(id);
+  if (globalUser) {
+    //prevent duplication of button on reload of page
+    if ($("#addToFavorites").val() == null) {
+      $("#buttonRow").append(
+        `<button id="addToFavorites">Add to Favorites</button>`
+      );
     }
 
-    //----DETAIL PAGE BUTTON LISTENERS----\\
+    //prevent duplication of button on reload of page
+    if ($("#addReview").val() == null) {
+      $("#buttonRow").append(`<button id="addReview">Add Review</button>`);
+    }
 
-    $("#addToFavorites").on("click", () => {
-      addToFavorites(id);
-    });
-
-    $("#addReview").on("click", () => {
-      reviewModal(id);
-    });
-
-    $("#showReviews").on("click", () => {
-      showReviews(id);
-    });
-
-    $("#toggleReviews").on("click", () => {
-      if ($("#toggleReviews").text() == "Hide Reviews") {
-        //hide reviews
-        $(".reviewItem").css("display", "none");
-        $("#toggleReviews").html("Show Reviews");
-      } else if ($("#toggleReviews").text() == "Show Reviews") {
-        //show reviews again
-        $(".reviewItem").css("display", "block");
-        $("#toggleReviews").html("Hide Reviews");
-      }
-    });
+    checkItemButtons(id);
   }
+
+  //----DETAIL PAGE BUTTON LISTENERS----\\
+
+  $("#addToFavorites").on("click", () => {
+    addToFavorites(id);
+  });
+
+  $("#addReview").on("click", () => {
+    reviewModal(id);
+  });
+
+  $("#showReviews").on("click", () => {
+    showReviews(id);
+  });
+
+  $("#toggleReviews").on("click", () => {
+    if ($("#toggleReviews").text() == "Hide Reviews") {
+      //hide reviews
+      $(".reviewItem").css("display", "none");
+      $("#toggleReviews").html("Show Reviews");
+    } else if ($("#toggleReviews").text() == "Show Reviews") {
+      //show reviews again
+      $(".reviewItem").css("display", "block");
+      $("#toggleReviews").html("Hide Reviews");
+    }
+  });
 }
 
 export function search() {

@@ -5,7 +5,6 @@
   font-family: Georgia, "Times New Roman", Times, serif;
 }
 
-html,
 body {
   height: 100%;
   padding: 0 8%;
@@ -16,6 +15,11 @@ body {
   background-color: #ffffff;
 }
 
+@media screen and (max-width: 500px) {
+  body {
+    padding: 0 10px;
+  }
+}
 nav {
   display: flex;
   align-items: center;
@@ -92,6 +96,16 @@ nav .loginOut #logout {
   display: none;
   cursor: pointer;
   margin-left: 10px;
+}
+@media screen and (max-width: 500px) {
+  nav {
+    flex-direction: column;
+    height: 130px;
+    padding-top: 10px;
+  }
+  nav #logoWrapper, nav .searchInput {
+    margin-bottom: 7px;
+  }
 }
 footer {
   display: flex;
@@ -192,6 +206,7 @@ footer {
 }
 #view #viewItem img {
   max-width: 325px;
+  min-width: 170px;
   width: 30%;
   border-radius: 0 15px 0 15px;
   box-shadow: 3px 6px 6px #717070;
@@ -238,8 +253,6 @@ footer {
 }
 #view #viewReviews #avgRating {
   margin-bottom: 25px;
-  border-bottom: 1px solid #000;
-  border-radius: 5px;
   padding-bottom: 7px;
   font-size: 20px;
 }
@@ -267,6 +280,18 @@ footer {
   margin-top: 30px;
 }
 
+@media screen and (max-width: 750px) {
+  #view #viewItem {
+    flex-direction: column;
+  }
+  #view #viewItem #viewData {
+    border-top: #a9a3a3 1px solid;
+    border-bottom: #a9a3a3 1px solid;
+    border-radius: 0px;
+    margin: 20px 0;
+    width: 100%;
+  }
+}
 #user {
   margin-top: 20px;
 }
@@ -372,12 +397,26 @@ footer {
   box-shadow: 3px 6px 6px #717070;
 }
 
-#email, #password, #username {
+#email,
+#password,
+#username {
   border: 1px solid #c0b7b7;
 }
-#email::placeholder, #password::placeholder, #username::placeholder {
+#email::placeholder,
+#password::placeholder,
+#username::placeholder {
   opacity: 1 !important;
   color: #c0b7b7;
+}
+
+@media screen and (max-width: 700px) {
+  #user #userData .userSection #userInfo {
+    flex-direction: column;
+  }
+  #user #userData .userSection #userInfo .userInfoDetail {
+    width: 100%;
+    margin-bottom: 10px;
+  }
 }
 
 /*# sourceMappingURL=styles.css.map */

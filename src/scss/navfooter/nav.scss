@@ -98,3 +98,15 @@ nav {
     }
   }
 }
+
+@media screen and (max-width: 500px) {
+  nav {
+    flex-direction: column;
+    height: 130px;
+    padding-top: 10px;
+
+    #logoWrapper, .searchInput {
+      margin-bottom: 7px;
+    }
+  }
+}

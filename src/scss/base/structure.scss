@@ -4,12 +4,17 @@
   box-sizing: border-box;
   font-family: Georgia, "Times New Roman", Times, serif;
 }
-html,
 body {
   height: 100%;
-  padding: 0 $pagePadSize;
+  padding: 0 8%;
 }
 #app {
   min-height: $centerVertical;
   background-color: $secondaryColor;
+}
+
+@media screen and (max-width: 500px) {
+  body {
+    padding: 0 10px;
+  }
 }

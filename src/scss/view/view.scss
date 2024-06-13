@@ -31,6 +31,7 @@
 
     img {
       max-width: 325px;
+      min-width: 170px;
       width: 30%;
       border-radius: 0 15px 0 15px;
       box-shadow: 3px 6px 6px #717070;
@@ -88,8 +89,6 @@
 
     #avgRating {
       margin-bottom: 25px;
-      border-bottom: 1px solid #000;
-      border-radius: 5px;
       padding-bottom: 7px;
       font-size: 20px;
     }
@@ -121,4 +120,24 @@
 #reviewText {
   width: 70%;
   margin-top: 30px;
+}
+
+@media screen and (max-width: 750px) {
+  #view {
+    #viewItem {
+      flex-direction: column;
+
+      #viewImg {
+        
+      }
+
+      #viewData {
+        border-top: #a9a3a3 1px solid;
+        border-bottom: #a9a3a3 1px solid;
+        border-radius: 0px;
+        margin: 20px 0;
+        width: 100%;
+      }
+    }
+  }
 }
