@@ -8,6 +8,8 @@
 body {
   height: 100%;
   padding: 0 8%;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
 #app {
@@ -116,12 +118,12 @@ footer {
   font-size: 16px;
 }
 
-#list {
+#list, #search {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-#list h1 {
+#list h1, #search h1 {
   display: inline;
   text-align: center;
   font-weight: 100;
@@ -129,14 +131,17 @@ footer {
   border-radius: 5px;
   margin: 10px 0;
 }
-#list #listData {
-  display: flex;
-  flex-wrap: wrap;
+#list #listData, #list #searchData, #search #listData, #search #searchData {
+  display: grid;
+  column-gap: 10%;
+  grid-template-columns: repeat(auto-fill, minmax(225px, 1fr));
+  width: 100%;
   margin-bottom: 50px;
+  justify-content: center;
 }
-#list #listData .drinkItem {
+#list #listData .drinkItem, #list #searchData .drinkItem, #search #listData .drinkItem, #search #searchData .drinkItem {
   display: flex;
-  flex: 0 0 25%;
+  max-width: 225px;
   align-items: center;
   flex-direction: column;
   justify-content: space-between;
@@ -144,36 +149,36 @@ footer {
   margin: 0 auto;
   margin-top: 25px;
 }
-#list #listData .drinkItem:hover p {
+#list #listData .drinkItem:hover p, #list #searchData .drinkItem:hover p, #search #listData .drinkItem:hover p, #search #searchData .drinkItem:hover p {
   color: #e5697e;
 }
-#list #listData .drinkItem p {
+#list #listData .drinkItem p, #list #searchData .drinkItem p, #search #listData .drinkItem p, #search #searchData .drinkItem p {
   border: none;
   color: #000;
   margin-bottom: 10px;
   font-size: 18px;
 }
-#list #listData .drinkItem img {
+#list #listData .drinkItem img, #list #searchData .drinkItem img, #search #listData .drinkItem img, #search #searchData .drinkItem img {
   max-width: 225px;
   border-radius: 0 15px 0 15px;
   box-shadow: 3px 6px 6px #717070;
 }
-#list .letterPagination {
+#list .letterPagination, #search .letterPagination {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
   padding: 0 5% 50px 5%;
 }
-#list .letterPagination a {
+#list .letterPagination a, #search .letterPagination a {
   text-decoration: none;
   color: hotpink;
   font-size: 18px;
 }
-#list .letterPagination a:visited {
+#list .letterPagination a:visited, #search .letterPagination a:visited {
   color: hotpink;
 }
-#list .letterPagination a:hover {
+#list .letterPagination a:hover, #search .letterPagination a:hover {
   color: #000;
 }
 

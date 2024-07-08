@@ -7,6 +7,8 @@
 body {
   height: 100%;
   padding: 0 8%;
+  max-width: $siteWidth;
+  margin: 0 auto;
 }
 #app {
   min-height: $centerVertical;

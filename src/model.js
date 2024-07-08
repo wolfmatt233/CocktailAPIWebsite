@@ -1093,8 +1093,8 @@ async function view(id) {
   });
 }
 
-export function search() {
-  let term = $("#searchBtn").val();
+function search() {
+  let term = $("#searchTerm").val();
 
   if (term === "") {
     $("#listData").html(`No results.`);
@@ -1109,10 +1109,10 @@ export function search() {
     data = data.drinks;
 
     if (data === null) {
-      $("#listData").html(`No results.`);
+      $("#searchData").html(`No results.`);
     } else {
       data.forEach((drink) => {
-        $("#listData").append(`
+        $("#searchData").append(`
           <a href="#view_${drink.idDrink}" class="drinkItem">
               <p>${drink.strDrink}</p>
               <img src="${drink.strDrinkThumb}" alt="DrinkImg">
