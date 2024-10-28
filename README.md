@@ -2,7 +2,7 @@
 
 Authors: Matthew Wolf, IUPUI, N423 Fall 2023
 
-[Link](https://wolfmatt233.github.io/CocktailAPIWebsite/dist/)
+[Try it here](https://wolfmatt233.github.io/CocktailAPIWebsite/dist/)
 
 ## Project Information
 
